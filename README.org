@@ -1,0 +1,17 @@
+* What Is This?
+
+  There's no shortage of advice online about how to set up a simple (or not-so-simple) blog using org-mode in Emacs. Most of this advice assumes a lot of things that aren't true about me:
+
+  - I am not that comfortable with writing/editing large globs of mostly impenetrable elisp source.
+  - I don't really want a static site generator, since that adds a build step, and I'd rather be able to just make my edits and go.
+  - I don't really want to deal with the really-quite-confusing and dense HTML that org-mode's default exporter comes with.
+  - I don't really want to export from org-mode to Jekyll just so I can have Jekyll do the formatting for me.
+
+In short, my ideal solution didn't exist, so I'm working on creating it. This project:
+
+  - is not a static generator. Pages are built per-request, so updating is as simple as changing the source files,
+  - does not require building into intermediate formats, and
+  - uses a simple single org file (=entries.org=), plus a couple Mustache templates as its only input.
+
+* Work In Progress
+  This is still a work in progress. I'm not using it on any of my own sites yet.
