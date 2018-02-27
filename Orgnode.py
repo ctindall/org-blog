@@ -66,9 +66,9 @@ def makelist(filename):
    
    for line in f:
        ctr += 1     
-       hdng = re.search('^(\*+)\s(.*?)\s*$', line)
+       hdng = re.search('^(\*)\s(.*?)\s*$', line)
        if hdng:
-          if heading:  # we are processing a heading line
+          if heading:  # we are processing top-level heading line
              thisNode = Orgnode(level, heading, bodytext, tag1, alltags)
              if sched_date:
                 thisNode.setScheduled(sched_date)
@@ -210,7 +210,10 @@ class Orgnode(object):
         Values values are '', 'A', 'B', 'C'
         """
         self.prty = newprty
-    
+
+    def to_html(self):
+       return "<pre>" + self.body + "</pre>"
+        
     def Tag(self):
         """
         Returns the value of the first tag.
