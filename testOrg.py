@@ -5,7 +5,7 @@ entries = op.load("/home/cam/git/org-blog.git/org-files/entries.org")
 
 def show_entry(e,level):
     indent = ""
-    for n in range(level):
+    for n in range(1,level):
         indent += "\t"
         
     print(indent + "title:")
@@ -18,8 +18,8 @@ def show_entry(e,level):
     print(indent + e.get_text())
 
     print(indent + "subheadings:")
-    for e in e.get_subentries():
-        show_entry(e,level + 1)
+    for entry in e.get_subentries():
+        show_entry(entry,level + 1)
 
     print(indent + "html:")
     print(indent + e.to_html())

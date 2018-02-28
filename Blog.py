@@ -1,4 +1,5 @@
-import Orgnode
+from Org import OrgParser
+
 import pystache
 import re
 import os
@@ -18,15 +19,13 @@ class Blog:
         self.context = {}
         self.context['entries'] = []
 
-        nodelist = Orgnode.makelist(self.orgfile_path)
-        for node in nodelist:
+        op = OrgParser()
+        entries = op.load(self.orgfile_path)
+        for e in entries:
             entry = {}
-            entry['heading'] = node.Heading()
-            entry['slug'] = self.__slugify(entry['heading'])
-                
-            entry['body'] = node.Body()
-            entry['tags'] = node.Tags()
-            entry['todo'] = node.Todo()
+            entry['title'] = e.get_title()
+            entry['slug'] = self.__slugify(entry['title'])
+            entry['html'] = e.to_html()
             self.context['entries'].append(entry)
     
     def getEntries(self, format="none"):

@@ -35,10 +35,29 @@ class OrgEntry:
         return self.__text
     
     def to_html(self):
-        html = "<pre>"
+        heading_tags = {
+            1: "h1",
+            2: "h2",
+            3: "h3",
+            4: "h4",
+            5: "h5",
+            6: "h6"
+        }
+
+        if self.get_level() > 6:
+            heading_tag = "b"
+        else:
+            heading_tag = heading_tags[self.get_level()]
+        
+        html = "<div class='entry'>\n"
+
+        if self.get_level() > 1: #don't include top-level titles as these are handled by the template
+            html += "<" + heading_tag + ">" + self.get_title() + "</" + heading_tag + ">\n"
+            
+        html += "<p>" + self.get_text() + "\n</p>\n"
         for subentry in self.get_subentries():
             html += subentry.to_html()
-        html += "</pre>"
+        html += "</div>\n"
         return html
 
 class LineStream:
@@ -83,13 +102,11 @@ class OrgParser:
             
             if match and parsed_level == level:
                 return title, level
-        else:
-            print("peek is empty at line " + str(self.__stream.get_line_number()))
+            
         return None, None
     
     def __parse_regular_line(self):
         global re
-        print ("looking for regular line at line " + str(self.__stream.get_line_number()))
         if self.__peek():
             match = re.search('^[^\*]', self.__peek())
             if match:
