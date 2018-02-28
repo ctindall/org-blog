@@ -9,7 +9,7 @@ def read():
     else:
         #if all else fails, use default values
         return { 
-            "entries_file": "/var/org-blog/entries.org",
+            "collections_directory": "/var/org-blog/collections/",
             "template_directory": "/var/org-blog/templates/"
         }
     
