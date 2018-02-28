@@ -4,19 +4,24 @@ from flask import Flask,redirect
 import json
 
 #our stuff
-from Collection import Collection
 import Config
+from Collection import CollectionManager
 
 app = Flask(__name__)
 config = Config.read()
 
+@app.route("/", methods=["GET"])
+def route_root():
+    collection_manager = CollectionManager(config)
+    return collection_manager.get_all_collections(format="html")
+
 @app.route("/<string:collection_slug>/", methods=["GET"])
 @app.route("/<string:collection_slug>", methods=["GET"])
 def route_get_items(collection_slug):
-    collection = Collection(collection_slug, config)
-    return collection.get_items(format="html")
+    collection_manager = CollectionManager(config)
+    return collection_manager.get_all_collection_items(collection_slug, format="html")
 
 @app.route("/<string:collection_slug>/<string:item_slug>", methods=["GET"])
 def route_get_item(collection_slug, item_slug):
-    collection = Collection(collection_slug, config)
-    return collection.get_item(item_slug, format="html")
+    collection_manager = CollectionManager(config)
+    return collection_manager.get_collection_item(collection_slug, item_slug, format="html")

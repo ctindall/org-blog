@@ -6,6 +6,7 @@ class OrgEntry:
         self.__text = ""
         self.__subentries = []
 
+        
     #title
     def set_title(self, title):
         self.__title = title
