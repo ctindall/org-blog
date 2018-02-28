@@ -35,7 +35,11 @@ class OrgEntry:
         return self.__text
     
     def to_html(self):
-        return "<pre>" + self.__text + "</pre>"
+        html = "<pre>"
+        for subentry in self.get_subentries():
+            html += subentry.to_html()
+        html += "</pre>"
+        return html
 
 class LineStream:
     def __init__(self, string):
@@ -43,7 +47,7 @@ class LineStream:
         self.__position = 0
 
     def peek(self): #look at current line in stream
-        if self.__position < len(self.__lines) - 1:
+        if self.__position < len(self.__lines):
             return self.__lines[self.__position]
         else:
             return None
@@ -79,11 +83,13 @@ class OrgParser:
             
             if match and parsed_level == level:
                 return title, level
-
+        else:
+            print("peek is empty at line " + str(self.__stream.get_line_number()))
         return None, None
     
-    def __parse_non_heading_line(self):
+    def __parse_regular_line(self):
         global re
+        print ("looking for regular line at line " + str(self.__stream.get_line_number()))
         if self.__peek():
             match = re.search('^[^\*]', self.__peek())
             if match:
@@ -103,9 +109,11 @@ class OrgParser:
             self.__stream.eat()
 
             # look for any text directly under this heading
-            while self.__parse_non_heading_line():
-                entry.add_line(self.__peek())
+            regular_line = self.__parse_regular_line()
+            while regular_line:
+                entry.add_line(regular_line)
                 self.__eat()
+                regular_line = self.__parse_regular_line()
 
             #recursively look for any subheadings of the next higher level
             subentry = self.__parse_entry(level=my_level + 1)
