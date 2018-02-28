@@ -34,7 +34,7 @@
    This is the full path to the directory containing org files which represent collections.
 
 ** template_directory
-   Default: =/var/org-blog/templates=
+   Default: =/var/org-blog/templates/=
    This is the full path to the directory containting collection templates. Each collection shoud have its own subdirectory with an =item.html= and an =items.html=. A basic blog might look like this:
 
 #+BEGIN_SRC 
