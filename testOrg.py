@@ -14,7 +14,7 @@ for e in entries:
     print(e.get_text())
 
     print("subheadings:")
-    print(str(len(e.get_subentries())))
+    print(e.get_subentries())
 
     print ("---------------")
 

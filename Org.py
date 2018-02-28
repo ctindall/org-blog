@@ -1,8 +1,10 @@
 import re
 
 class OrgEntry:
-    def __init__(self, title="")
+    def __init__(self, title=""):
         self.__title = title
+        self.__text = ""
+        self.__subentries = []
 
     #title
     def set_title(self, title):
@@ -17,10 +19,21 @@ class OrgEntry:
 
     def get_level(self):
         return self.__level
-        
+
+    #subentries
+    def add_subentry(self, entry):
+        self.__subentries.append(entry)
+
+    def get_subentries(self):
+        return self.__subentries
+
+    #text
     def add_line(self, line):
         self.__text = self.__text + "\n" + line
-        
+
+    def get_text(self):
+        return self.__text
+    
     def to_html(self):
         return "<pre>" + self.__text + "</pre>"
 
@@ -30,15 +43,21 @@ class LineStream:
         self.__position = 0
 
     def peek(self): #look at current line in stream
-        return self.__lines[self.__position]
+        if self.__position < len(self.__lines) - 1:
+            return self.__lines[self.__position]
+        else:
+            return None
 
     def eat(self): #advance the tape to the next line
         self.__position = self.__position + 1
+
+    def get_line_number(self):
+        return self.__position + 1
     
 class OrgParser:
 
     def load(self, filename):
-        self.loads(open(filename).read())
+        return self.loads(open(filename).read())
 
     def loads(self, string):
         self.__stream = LineStream(string)
@@ -51,70 +70,61 @@ class OrgParser:
         return self.__stream.peek()
     
 
-    def __parse_heading_line(self, greater_than=0):
+    def __parse_heading_line(self, level=1):
         global re
-        match = re.search('^(\*+)(\s)(.*)', self.__peek())
-        level = len(match.group(1))
-        title = match.group(3)
+        if self.__peek():
+            match = re.search('^(\*+)(\s)(.*)', self.__peek())
+            parsed_level = len(match.group(1))
+            title = match.group(3)
+            
+            if match and parsed_level == level:
+                return title, level
 
-        if match and level > greater_than:
-            return level, title
-        else:
-            return None
-
+        return None, None
+    
     def __parse_non_heading_line(self):
         global re
-        match = re.search('', self.__peek())
-        if match:
-            return match.string
-        else:
-            return None
-
-    def __parse_entry(self, greater_than=0):
-        
-        if self.__parse_heading_line():
+        if self.__peek():
+            match = re.search('^[^\*]', self.__peek())
+            if match:
+                return match.string
+        return None
+    
+    def __parse_entry(self, level=1):
+        my_title, my_level = self.__parse_heading_line(level=level);
+        if my_title and my_level == level:
+            #start a new entry
             entry = OrgEntry()
-            title, level = self.__parse_heading_line();
-            entry.set_title(title)
-            entry.set_level(level)
-            text = ""
+
+            entry.set_title(my_title)
+            entry.set_level(my_level)
+
+            #we're done with the heading line
             self.__stream.eat()
 
             # look for any text directly under this heading
             while self.__parse_non_heading_line():
-                text = text + "\n" + self.__peek();
+                entry.add_line(self.__peek())
                 self.__eat()
 
-            #look for any subheadings
-            while self.__parse_entry(greater_than=level):
+            #recursively look for any subheadings of the next higher level
+            subentry = self.__parse_entry(level=my_level + 1)
+            while subentry:
+                entry.add_subentry(subentry)
+                subentry = self.__parse_entry(level=my_level + 1)
 
-            return 
+            return entry
         else:
-             return None       
+            return None    
 
         
     def __parse_entry_list(self):
         global re
-        out = []
-        
-                
-            
-                
-            
-                
-        for line in string.splitlines():
-            match = re.search('^(\*+)(\s)(.*)', line)
-            level = len(match.group(1))
-            
-            if match and level == 1: #this is a top-level heading line
-                #we're done with the last entry
-                entries.append(entry)
+        entries = []
 
-                #...and we start on the next one
-                entry = OrgEntry(title=match.group(3))
-            elif match and level > 1: #this is a sub-entry
-                
-            else # this is just another line
-                entry.add_line(line)
-                #TODO add tags and TODO states
-                
+        entry = self.__parse_entry()
+        while entry:
+            entries.append(entry)
+            entry = self.__parse_entry()
+
+        return entries
