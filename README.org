@@ -7,11 +7,42 @@
   - I don't really want to deal with the really-quite-confusing and dense HTML that org-mode's default exporter comes with.
   - I don't really want to export from org-mode to Jekyll just so I can have Jekyll do the formatting for me.
 
-In short, my ideal solution didn't exist, so I'm working on creating it. This project:
+  In short, my ideal solution didn't exist, so I made it. This project:
 
   - is not a static generator. Pages are built per-request, so updating is as simple as changing the source files,
-  - does not require building into intermediate formats, and
-  - uses a simple single org file (=entries.org=), plus a couple Mustache templates as its only input.
+  - does not require a makefile or any build steps to update my site
+  - uses a simple single org file (=entries.org=), plus a couple Mustache templates, and a smal JSON config file as its only input.
+
+* Concepts
+** Collections
+   Your "blog" can have more than one collection. If you are creating a real blog, you will probably want to call this collection "posts". Each collection is a single org-mode formatted file. The top-level headings in this file are assumed to be items in this collection.
+
+** Templates
+   Templating uses the [[https://github.com/defunkt/pystache][pystache]] library, which gives a familiar mustache or "double-hug" syntax. Each collection needs two template files, a =<collection_name>/items.html= file and a =<collection_name>/item.html=.  
+   
+   =items.html= is used to construct the "index" page for that collection. It has in its context a list called =items=, which contains the context of the whole collection, allowing you to write out a list.
+
+   =item.html= , while the latter is used to construct the individual item pages. It has in its context only the information about a single item, available in the variable called =item=.
+
+   In the context of a blog, =items.html= would be used for the =/posts= url, while =items.html= would be used for a url like =/posts/2018-06-01-its-my-birthday-again=.
+
+* Configuration
+  org-blog looks for a site-wide configuration file in =/etc/org-blog.json= first. If there's none there, it will check =~/.org-blog.json= next. Finally it will use some default internal values. There are the configuration settings currently supported:
+
+** collections_directory
+   Default: =/var/org-blog/collections/=
+   This is the full path to the directory containing org files which represent collections.
+
+** template_directory
+   Default: =/var/org-blog/templates=
+   This is the full path to the directory containting collection templates. Each collection shoud have its own subdirectory with an =item.html= and an =items.html=. A basic blog might look like this:
+
+#+BEGIN_SRC 
+.
+└── posts
+    ├── item.html
+    └── items.html
+#+END_SRC
 
 * Work In Progress
   This is still a work in progress. I'm not using it on any of my own sites yet.
