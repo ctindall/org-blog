@@ -55,7 +55,7 @@ class CollectionManager():
         for c in self.get_all_collections():
             if c.get_slug() == collection_slug:
                 return c.get_item(item_slug, format=format)
-        raise LookupError("The item '" + item_slug + "' does not exist in the collection '" + collection_slug + "'")
+       
         
 class Collection:
     
@@ -96,10 +96,14 @@ class Collection:
         
     def get_item(self, slug, format=None):
         self.__updateContext()
-
+        item = None
+        
         for i in self.context['items']:
             if i['slug'] == slug:
                 item = i
+
+        if not item:
+            raise LookupError("The item '" + slug + "' does not exist in the collection '" + self.__collection_slug + "'")
         
         if(format == "html"):
             template = open(os.path.join(self.__template_directory, self.__collection_slug, "item.html"), "r").read()

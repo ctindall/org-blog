@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from flask import Flask,redirect
+from flask import Flask,redirect,abort
 import json
 
 #our stuff
@@ -19,9 +19,18 @@ def route_root():
 @app.route("/<string:collection_slug>", methods=["GET"])
 def route_get_items(collection_slug):
     collection_manager = CollectionManager(config)
-    return collection_manager.get_all_collection_items(collection_slug, format="html")
+    try:
+        html = collection_manager.get_all_collection_items(collection_slug, format="html")
+        return html
+    except LookupError:
+        abort(404)
+    
 
 @app.route("/<string:collection_slug>/<string:item_slug>", methods=["GET"])
 def route_get_item(collection_slug, item_slug):
     collection_manager = CollectionManager(config)
-    return collection_manager.get_collection_item(collection_slug, item_slug, format="html")
+    try:
+        html = collection_manager.get_collection_item(collection_slug, item_slug, format="html")
+        return html
+    except LookupError:
+        abort(404)
