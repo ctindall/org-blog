@@ -13,18 +13,23 @@
   - does not require a makefile or any build steps to update my site
   - uses a simple single org file (=entries.org=), plus a couple Mustache templates, and a smal JSON config file as its only input.
 
-* Concepts
-** Collections
-   Your "blog" can have more than one collection. If you are creating a real blog, you will probably want to call this collection "posts". Each collection is a single org-mode formatted file. The top-level headings in this file are assumed to be items in this collection.
+* Collections
+  Your "blog" can have more than one collection. If you are creating a real blog, you will probably want to call this collection "posts". Each collection is a single org-mode formatted file. The top-level headings in this file are assumed to be items in this collection.
 
-** Templates
-   Templating uses the [[https://github.com/defunkt/pystache][pystache]] library, which gives a familiar mustache or "double-hug" syntax. Each collection needs two template files, a =<collection_name>/items.html= file and a =<collection_name>/item.html=.  
-   
-   =items.html= is used to construct the "index" page for that collection. It has in its context a list called =items=, which contains the context of the whole collection, allowing you to write out a list.
+* Templates
+  Templating uses the [[https://github.com/defunkt/pystache][pystache]] library, which gives a familiar mustache or "double-hug" syntax. Templates are kept in the configured =template_directory= (see the [[Configuration]] section for more information on finding or configuring this directory).
 
-   =item.html= , while the latter is used to construct the individual item pages. It has in its context only the information about a single item, available in the variable called =item=.
+** Main Template
+   The root page of your site (the one at =/=) is built from a template called =index.html= in the templates directory. This template has access to all collections via its context. For example, if you have a =posts.org= and a =projects.org= file in your =collections_directory=, the =index.html= template will have access to two collections: =posts= and =projects=.
 
-   In the context of a blog, =items.html= would be used for the =/posts= url, while =items.html= would be used for a url like =/posts/2018-06-01-its-my-birthday-again=.
+** Collection Templates
+   In addition to the =index.html= template, each collection needs two template files, a =<collection_name>/items.html= file and a =<collection_name>/item.html=.  
+  
+  =items.html= is used to construct the "index" page for that collection. It has in its context a list called =items=, which contains the context of the whole collection, allowing you to write out a list.
+
+  =item.html= , while the latter is used to construct the individual item pages. It has in its context only the information about a single item, available in the variable called =item=.
+
+  In the context of a blog, =items.html= would be used for the =/posts= url, while =items.html= would be used for a url like =/posts/2018-06-01-its-my-birthday-again=.
 
 * Configuration
   org-blog looks for a site-wide configuration file in =/etc/org-blog.json= first. If there's none there, it will check =~/.org-blog.json= next. Finally it will use some default internal values. There are the configuration settings currently supported:
