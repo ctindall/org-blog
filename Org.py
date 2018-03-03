@@ -1,4 +1,28 @@
 import re
+import string
+
+class OrgSection:
+    def __init__(self, type="regular_text"):
+        self.type = type
+        self.__lines = []
+
+    def __str__(self):
+        return "section type: " + self.type + "\n-----------------" + "\n".join(self.__lines)
+    
+    def set_type(self, type):
+        self.type = type
+
+    def get_type(self):
+        return type
+
+    def add_line(self, line):
+        self.__lines.append(line)
+
+    def add_lines(self, lines):
+        self.__lines = self.__lines + lines
+    
+    def get_lines(self):
+        return self.__lines
 
 class OrgEntry:
     def __init__(self, title=""):
@@ -7,6 +31,7 @@ class OrgEntry:
         self.__tags = []
         self.__subentries = []
         self.__superentries = []
+        self.__sections = []
         
     #title
     def set_title(self, title):
@@ -51,6 +76,13 @@ class OrgEntry:
     def get_subentries(self):
         return self.__subentries
 
+    #sectionss
+    def add_section(self, section):
+        self.__sections.append(section)
+
+    def get_sections(self):
+        return self.__sections
+    
     #text
     def add_line(self, line):
         self.__text = self.__text + "\n" + line
@@ -132,9 +164,11 @@ class OrgParser:
     def __parse_regular_line(self):
         global re
         if self.__peek():
-            match = re.search('^[^\*]', self.__peek())
-            if match:
-                return match.string
+            is_heading = re.search('^[\*]', self.__peek())
+            is_option  = re.search('^(\s+)?\#\+', self.__peek())
+            if not is_heading  and not is_option:
+                return self.__peek()
+            
         return None
 
     def __parse_tags(self):
@@ -146,6 +180,62 @@ class OrgParser:
         else:
             parsed_tags = []
         return parsed_tags
+
+    def __parse_regular_text_section(self):
+        lines = []
+        regular_line = self.__parse_regular_line()
+        while regular_line:
+            lines.append(regular_line)
+            self.__eat()
+            regular_line = self.__parse_regular_line()
+
+        if lines != []:
+            section = OrgSection()
+            section.add_lines(lines)
+        else:
+            section = None
+        
+        return section
+
+    def __parse_begin_src(self):
+        match = re.search('^(\s)?(\#\+BEGIN_SRC)', self.__peek())
+        if match:
+            return True
+
+        return None
+
+    def __parse_end_src(self):
+        match = re.search('^(\s)?(\#\+END_SRC)', self.__peek())
+        if match:
+            return True
+
+        return None        
+    
+    def __parse_source_section(self):
+        lines = []
+        
+        is_src = self.__parse_begin_src()
+        if is_src:
+            self.__eat()
+            line = self.__parse_regular_line()
+            while line:
+                lines.append(line)
+                self.__eat()
+                line = self.__parse_regular_line()
+
+            is_end = self.__parse_end_src()
+            if not is_end:
+                raise Exception("Was expecting END_SRC line and never found it (line " + self.get_line_number() + ")")
+            self.__eat() #don't need the END_SRC line
+            section = OrgSection(type="source")
+            section.add_lines(lines)
+            return section
+        else:
+            return None
+    
+    def __parse_section(self):
+        section = self.__parse_regular_text_section() or self.__parse_source_section()
+        return section
     
     def __parse_entry(self, level=1):
         my_title, my_level = self.__parse_heading_line(level=level);
@@ -156,17 +246,14 @@ class OrgParser:
             entry.set_title(my_title)
             entry.set_level(my_level)
             entry.add_tags(self.__parse_tags())
+            self.__stream.eat()             #we're done with the heading line
 
-            #we're done with the heading line
-            self.__stream.eat()
-
-            # look for any text directly under this heading
-            regular_line = self.__parse_regular_line()
-            while regular_line:
-                entry.add_line(regular_line)
-                self.__eat()
-                regular_line = self.__parse_regular_line()
-
+            #look for sections
+            section = self.__parse_section()
+            while section:
+                entry.add_section(section)
+                section = self.__parse_section()
+            
             #recursively look for any subheadings of the next higher level
             subentry = self.__parse_entry(level=my_level + 1)
             while subentry:

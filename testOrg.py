@@ -16,9 +16,10 @@ def show_entry(e,level):
 
     print(indent + "tags:")
     print(indent + str(e.get_tags()))
-    
-    print(indent + "text:")
-    print(indent + e.get_text())
+
+    for s in e.get_sections():
+        print(indent + "------------------------")
+        print(indent + str(s))
 
     print(indent + "subheadings:")
     for entry in e.get_subentries():
