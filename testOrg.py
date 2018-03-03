@@ -1,7 +1,7 @@
 from Org import *
 
 op = OrgParser()
-entries = op.load("/home/cam/git/org-blog.git/org-files/entries.org")
+entries = op.load("/home/cam/git/org-blog.git/org-files/posts.org")
 
 def show_entry(e,level):
     indent = ""
@@ -14,6 +14,9 @@ def show_entry(e,level):
     print(indent + "level:")
     print(indent + str(e.get_level()))
 
+    print(indent + "tags:")
+    print(indent + str(e.get_tags()))
+    
     print(indent + "text:")
     print(indent + e.get_text())
 
@@ -21,8 +24,8 @@ def show_entry(e,level):
     for entry in e.get_subentries():
         show_entry(entry,level + 1)
 
-    print(indent + "html:")
-    print(indent + e.to_html())
+    # print(indent + "html:")
+    # print(indent + e.to_html())
 
     print (indent + "---------------")
 

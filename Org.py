@@ -4,8 +4,8 @@ class OrgEntry:
     def __init__(self, title=""):
         self.__title = title
         self.__text = ""
+        self.__tags = []
         self.__subentries = []
-
         
     #title
     def set_title(self, title):
@@ -21,6 +21,16 @@ class OrgEntry:
     def get_level(self):
         return self.__level
 
+    #tags
+    def add_tag(self, tag):
+        self.__tags.append(tag)
+        
+    def add_tags(self, tags):
+        self.__tags = self.__tags + tags
+        
+    def get_tags(self):
+        return self.__tags
+    
     #subentries
     def add_subentry(self, entry):
         self.__subentries.append(entry)
@@ -100,7 +110,7 @@ class OrgParser:
             match = re.search('^(\*+)(\s)(.*)', self.__peek())
             parsed_level = len(match.group(1))
             title = match.group(3)
-            
+
             if match and parsed_level == level:
                 return title, level
             
@@ -113,6 +123,16 @@ class OrgParser:
             if match:
                 return match.string
         return None
+
+    def __parse_tags(self):
+        match = re.search('(\:.*\:)', self.__peek())
+        if match:
+        #if we're on a heading line and it has a tag portion...
+        #split the tag portion on ":" characters and get rid of the empty tags
+            parsed_tags = list(filter(lambda t: t != '', match.group().split(":")))
+        else:
+            parsed_tags = []
+        return parsed_tags
     
     def __parse_entry(self, level=1):
         my_title, my_level = self.__parse_heading_line(level=level);
@@ -122,6 +142,7 @@ class OrgParser:
 
             entry.set_title(my_title)
             entry.set_level(my_level)
+            entry.add_tags(self.__parse_tags())
 
             #we're done with the heading line
             self.__stream.eat()
