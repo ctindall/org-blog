@@ -6,6 +6,7 @@ class OrgEntry:
         self.__text = ""
         self.__tags = []
         self.__subentries = []
+        self.__superentries = []
         
     #title
     def set_title(self, title):
@@ -29,11 +30,23 @@ class OrgEntry:
         self.__tags = self.__tags + tags
         
     def get_tags(self):
-        return self.__tags
+        tags = self.__tags
+        for se in self.get_superentries():
+            tags = tags + se.get_tags()
+            
+        return tags
+
+    #superentries
+    def add_superentry(self, entry):
+        self.__superentries.append(entry)
+
+    def get_superentries(self):
+        return self.__superentries
     
     #subentries
     def add_subentry(self, entry):
         self.__subentries.append(entry)
+        entry.add_superentry(self)
 
     def get_subentries(self):
         return self.__subentries
