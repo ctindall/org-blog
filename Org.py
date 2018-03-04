@@ -152,7 +152,9 @@ class OrgParser:
     def __parse_heading_line(self, level=1):
         global re
         if self.__peek():
-            match = re.search('^(\*+)(\s)(.*)', self.__peek())
+            line_without_tags = re.sub('(\s+)?(\:.*\:)(\s+)?$', "", self.__peek())
+        
+            match = re.search('^(\*+)(\s)(.*)(\:.*\:)?', line_without_tags)
             parsed_level = len(match.group(1))
             title = match.group(3)
 
