@@ -21,18 +21,27 @@
       h6 { font-size: 1.0em;  }
 
       .entry { padding: 0; }
-      
+
+      .section-source {
+      display: block;
+      font-family: monospace;
+      white-space: pre;
+      unicode-bidi: embed;
+      }
     </style>
   </head>
   <body>
     <h1>{{title}}</h1>
     filed under:
+    {{^tags}}
+    not tagged
+    {{/tags}}
     <ul class="tags">
       {{#tags}}
       <li><a href="/posts/tag/{{.}}">{{.}}</a></li>
       {{/tags}}
-    <p>
-      {{{html}}}
-    </p>
+      <p>
+	{{{html}}}
+      </p>
   </body>
 </html>

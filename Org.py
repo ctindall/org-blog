@@ -3,17 +3,17 @@ import string
 
 class OrgSection:
     def __init__(self, type="regular_text"):
-        self.type = type
+        self.__type = type
         self.__lines = []
 
     def __str__(self):
         return "section type: " + self.type + "\n-----------------" + "\n".join(self.__lines)
     
     def set_type(self, type):
-        self.type = type
+        self.__type = type
 
     def get_type(self):
-        return type
+        return self.__type
 
     def add_line(self, line):
         self.__lines.append(line)
@@ -109,11 +109,17 @@ class OrgEntry:
 
         if self.get_level() > 1: #don't include top-level titles as these are handled by the template
             html += "<" + heading_tag + ">" + self.get_title() + "</" + heading_tag + ">\n"
+
+        for section in self.get_sections():
+            html += "<div class='section-" + section.get_type() + "'>\n"
+            for line in section.get_lines():
+                html += line + "\n"
             
         html += "<p>" + self.get_text() + "\n</p>\n"
         for subentry in self.get_subentries():
             html += subentry.to_html()
         html += "</div>\n"
+        
         return html
 
 class LineStream:

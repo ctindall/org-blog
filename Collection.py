@@ -16,7 +16,7 @@ class CollectionManager():
         for f in os.scandir(self.__collections_directory):
 
             #create a Collection object for each relevant file and append it to our list
-            match = re.search('^(.+)(\.org)$', os.path.basename(f.name))
+            match = re.search('^([^\#.]+)(\.org)$', os.path.basename(f.name))
             if match:
                 slug = match.group(1)
                 collection = Collection(slug, config)
