@@ -92,6 +92,22 @@ class OrgEntry:
 
     def get_text(self):
         return self.__text
+
+    def __linkify(self, line):
+        #return the same line, but with org-mode link syntax turned into HTML links
+        regex = '(\[\[)(https|http|ftps|ftp)(://)(.*?)(\]\[)(.*?)(\]\])'
+        
+        match = re.search(regex, line)        
+        while match:
+            proto = match.group(2)
+            url = match.group(4)
+            link_text = match.group(6)
+            link = "<a href='" + proto + "://" + url + "'>" + link_text + "</a>"
+            line = line.replace(match.group(), link)
+            print("replacing" + match.group() + " with " + link)
+            match = re.search(regex, line)
+
+        return line
     
     def to_html(self):
         heading_tags = {
@@ -116,6 +132,8 @@ class OrgEntry:
         for section in self.get_sections():
             html += "<div class='section-" + section.get_type() + "'>\n"
             for line in section.get_lines():
+                line = self.__linkify(line)
+                    
                 html += line + "\n"
             html += "</div>"
             
