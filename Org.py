@@ -7,7 +7,7 @@ class OrgSection:
         self.__lines = []
 
     def __str__(self):
-        return "section type: " + self.type + "\n-----------------" + "\n".join(self.__lines)
+        return "section type: " + self.__type + "\n-----------------" + "\n".join(self.__lines)
     
     def set_type(self, type):
         self.__type = type
@@ -131,8 +131,15 @@ class LineStream:
         if self.__position < len(self.__lines):
             return self.__lines[self.__position]
         else:
-            return None
+            return False
 
+    def finished(self):
+        if self.__position >= len(self.__lines):
+            return True
+        else:
+            return False
+
+        
     def eat(self): #advance the tape to the next line
         self.__position = self.__position + 1
 
@@ -156,10 +163,8 @@ class OrgParser:
     
 
     def __parse_heading_line(self, level=1):
-        global re
         if self.__peek():
             line_without_tags = re.sub('(\s+)?(\:.*\:)(\s+)?$', "", self.__peek())
-        
             match = re.search('^(\*+)(\s)(.*)(\:.*\:)?', line_without_tags)
             parsed_level = len(match.group(1))
             title = match.group(3)
@@ -170,7 +175,6 @@ class OrgParser:
         return None, None
     
     def __parse_regular_line(self):
-        global re
         if self.__peek():
             is_heading = re.search('^[\*]', self.__peek())
             is_option  = re.search('^(\s+)?\#\+', self.__peek())
@@ -191,6 +195,7 @@ class OrgParser:
 
     def __parse_regular_text_section(self):
         lines = []
+        
         regular_line = self.__parse_regular_line()
         while regular_line:
             lines.append(regular_line)
@@ -200,52 +205,68 @@ class OrgParser:
         if lines != []:
             section = OrgSection()
             section.add_lines(lines)
+            return section
         else:
-            section = None
+            return None
         
-        return section
-
-    def __parse_begin_src(self):
-        match = re.search('^(\s)?(\#\+BEGIN_SRC)', self.__peek())
-        if match:
-            return True
-
-        return None
-
-    def __parse_end_src(self):
-        match = re.search('^(\s)?(\#\+END_SRC)', self.__peek())
-        if match:
-            return True
-
-        return None        
-    
     def __parse_source_section(self):
         lines = []
         
         is_src = self.__parse_begin_src()
         if is_src:
-            self.__eat()
-            line = self.__parse_regular_line()
-            while line:
-                lines.append(line)
+            self.__eat() #down with the BEGIN_SRC line
+            
+            while not self.__parse_end_src():
+                lines.append(self.__peek())
                 self.__eat()
-                line = self.__parse_regular_line()
 
-            is_end = self.__parse_end_src()
-            if not is_end:
-                raise Exception("Was expecting END_SRC line and never found it (line " + self.get_line_number() + ")")
-            self.__eat() #don't need the END_SRC line
+            self.__eat() #done with the END_SRC line
+
+            #we're done, create a section and return it
             section = OrgSection(type="source")
             section.add_lines(lines)
             return section
         else:
             return None
     
+    def __parse_begin_src(self):
+        if self.__peek():
+            match = re.search('^(\s)?(\#\+BEGIN_SRC)', self.__peek())
+            if match:
+                return True
+
+        return None
+
+    def __parse_end_src(self):
+        if self.__peek():
+            match = re.search('^(\s)?(\#\+END_SRC)', self.__peek())
+            if match:
+                return True
+
+        return None        
+
+    def __parse_blank_line(self):
+        if not self.__stream.finished(): #if there are lines left
+            match = re.search('^\s*$', self.__peek())
+            if match: #...and the line is blank
+                return True
+            
+        return False
+                            
+    def __eat_blank_lines(self):
+        blank_line = self.__parse_blank_line()
+        while blank_line:
+            self.__eat()
+            blank_line = self.__parse_blank_line()
+        
     def __parse_section(self):
+        self.__eat_blank_lines()
         section = self.__parse_regular_text_section() or self.__parse_source_section()
         return section
     
     def __parse_entry(self, level=1):
+        self.__eat_blank_lines()
+        
         my_title, my_level = self.__parse_heading_line(level=level);
         if my_title and my_level == level:
             #start a new entry
