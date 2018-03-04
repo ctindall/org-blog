@@ -55,6 +55,13 @@ class CollectionManager():
         for c in self.get_all_collections():
             if c.get_slug() == collection_slug:
                 return c.get_item(item_slug, format=format)
+
+    def get_all_collection_items_with_tag(self, collection_slug, tag_slug, format=None):
+        for c in self.get_all_collections():
+            if c.get_slug() == collection_slug:
+                return c.get_items_with_tag(tag_slug, format=format)
+            
+        raise LookupError("The collection '" + collection_slug + "' does not exist")
        
         
 class Collection:
@@ -81,6 +88,8 @@ class Collection:
             item['title'] = i.get_title()
             item['slug'] = self.__slugify(item['title'])
             item['html'] = i.to_html()
+            item['tags'] = i.get_tags()
+            
             self.context['items'].append(item)
     
     def get_items(self, format=None):
@@ -92,7 +101,6 @@ class Collection:
             
         else:
             return self.context['items']
-
         
     def get_item(self, slug, format=None):
         self.__updateContext()
@@ -111,5 +119,24 @@ class Collection:
         else:
             return item
 
+    def get_items_with_tag(self, tag, format=None):
+        self.__updateContext()
+        items = []
+        
+        for i in self.context['items']:
+            if tag in i['tags']:
+                items.append(i)
+
+        context = {}
+        context['tag'] = tag
+        context['items'] = items
+        
+        if(format == "html"):
+            template = open(os.path.join(self.__template_directory, self.__collection_slug, "tag.html"), "r").read()
+            return pystache.render(template, context)
+        else:
+            return items
+
+        
     def get_slug(self):
         return self.__collection_slug

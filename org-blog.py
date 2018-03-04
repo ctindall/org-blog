@@ -34,3 +34,12 @@ def route_get_item(collection_slug, item_slug):
         return html
     except LookupError:
         abort(404)
+
+@app.route("/<string:collection_slug>/tag/<string:tag_slug>", methods=["GET"])
+def route_get_items_with_tag(collection_slug, tag_slug):
+    collection_manager = CollectionManager(config)
+    try:
+        html = collection_manager.get_all_collection_items_with_tag(collection_slug, tag_slug, format="html")
+        return html
+    except LookupError:
+        abort(404)

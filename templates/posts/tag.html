@@ -1,5 +1,4 @@
 <!doctype html>
-
 <html lang="en">
   <head>
     <style type="text/css">
@@ -25,14 +24,11 @@
     </style>
   </head>
   <body>
-    <h1>{{title}}</h1>
-    filed under:
-    <ul class="tags">
-      {{#tags}}
-      <li><a href="/posts/tag/{{.}}">{{.}}</a></li>
-      {{/tags}}
-    <p>
-      {{{html}}}
-    </p>
+    Items tagged '{{tag}}':
+    <ul>
+    {{#items}}
+    <li><a href="/posts/{{slug}}">{{title}}</a></li>
+    {{/items}}
+    </ul>
   </body>
 </html>
