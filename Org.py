@@ -1,6 +1,9 @@
 import re
 import string
 
+class OrgParseError(Exception):
+    pass
+
 class OrgSection:
     def __init__(self, type="regular_text"):
         self.__type = type
@@ -114,6 +117,7 @@ class OrgEntry:
             html += "<div class='section-" + section.get_type() + "'>\n"
             for line in section.get_lines():
                 html += line + "\n"
+            html += "</div>"
             
         html += "<p>" + self.get_text() + "\n</p>\n"
         for subentry in self.get_subentries():
@@ -166,6 +170,9 @@ class OrgParser:
         if self.__peek():
             line_without_tags = re.sub('(\s+)?(\:.*\:)(\s+)?$', "", self.__peek())
             match = re.search('^(\*+)(\s)(.*)(\:.*\:)?', line_without_tags)
+            if not match:
+                raise OrgParseError("trouble parsing heading at line " + str(self.__stream.get_line_number()))
+            
             parsed_level = len(match.group(1))
             title = match.group(3)
 
@@ -231,7 +238,7 @@ class OrgParser:
     
     def __parse_begin_src(self):
         if self.__peek():
-            match = re.search('^(\s)?(\#\+BEGIN_SRC)', self.__peek())
+            match = re.search('^(\s+)?(\#\+BEGIN_SRC)', self.__peek())
             if match:
                 return True
 
@@ -239,7 +246,7 @@ class OrgParser:
 
     def __parse_end_src(self):
         if self.__peek():
-            match = re.search('^(\s)?(\#\+END_SRC)', self.__peek())
+            match = re.search('^(\s+)?(\#\+END_SRC)', self.__peek())
             if match:
                 return True
 
