@@ -93,19 +93,55 @@ class OrgEntry:
     def get_text(self):
         return self.__text
 
+    def __inline_quotify(self, line):
+        regex = '\=(.*?)\='
+
+        match = re.search(regex, line)
+        while match:
+            text = match.group(1)
+            html = "<code>" + text + "</code>"
+            line = line.replace(match.group(), html)
+            match = re.search(regex, line)
+
+        return line
+
+    def __boldify(self, line):
+        regex = '\*(.*?)\*'
+
+        match = re.search(regex, line)
+        while match:
+            text = match.group(1)
+            html = "<b>" + text + "</b>"
+            line = line.replace(match.group(), html)
+            match = re.search(regex, line)
+
+        return line
+    
     def __linkify(self, line):
         #return the same line, but with org-mode link syntax turned into HTML links
-        regex = '(\[\[)(https|http|ftps|ftp)(://)(.*?)(\]\[)(.*?)(\]\])'
+        with_link_text_regex = '(\[\[)(https|http|ftps|ftp)(://)(.*?)(\]\[)(.*?)(\]\])'
+        without_link_text_regex = '(\[\[)(https|http|ftps|ftp)(://)(.*?)(\]\[)(.*?)'
         
-        match = re.search(regex, line)        
-        while match:
+        match_with_link_text = re.search(with_link_text_regex, line)
+        match_without_link_text = re.search(without_link_text_regex, line)
+        while match_with_link_text or match_without_link_text:
+            if match_with_link_text:
+                match = match_with_link_text
+            else:
+                match = match_without_link_text
+            
             proto = match.group(2)
             url = match.group(4)
-            link_text = match.group(6)
+            if match.group(6):
+                link_text = match.group(6)
+            else:
+                link_text = url
+                                    
             link = "<a href='" + proto + "://" + url + "'>" + link_text + "</a>"
             line = line.replace(match.group(), link)
-            print("replacing" + match.group() + " with " + link)
-            match = re.search(regex, line)
+            match_with_link_text = re.search(with_link_text_regex, line)
+            match_without_link_text = re.search(without_link_text_regex, line)
+
 
         return line
     
@@ -132,6 +168,9 @@ class OrgEntry:
         for section in self.get_sections():
             html += "<div class='section-" + section.get_type() + "'>\n"
             for line in section.get_lines():
+                line = self.__inline_quotify(line)
+                line = self.__boldify(line)
+#                line = self.__italicize(line)
                 line = self.__linkify(line)
                     
                 html += line + "\n"
