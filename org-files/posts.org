@@ -1,115 +1,5 @@
 * 2018-02-13 2018 MiLB Schedules in Org-mode		   :baseball:orgmode:
   Though it may be tough to tell from the weather, baseball season is near (for certain values of "near"), and that means it's time to get this year's minor league baseball (MiLB) schedules into my org-mode agenda. Luckily, MiLB hasn't changed anything about the format or accessibility of these schedules this year, so my method from last year remains largely unchanged. That said, I did have to come up with a new team name list, and I also organized the setup and [[https://github.com/ctindall/milb-schedules-org][uploaded it to Github]] for posterity. Pull requests are welcome!
-* 2017-12-01 The Bible in Org-mode		     :bible:religion:orgmode:
-  Some recent experiences in my life have prompted me to be more interested in spirituality and my faith. As part of that exploration, I would like to be able to easily write about and quote the Bible in my writing environment of choice, which happens to be Emacs and org-mode. Emacs already has the [[https://www.emacswiki.org/emacs/EsvMode][esv-mode]] but I don't really like the ESV translation--I like the King James version (KJV) since it has so much history and is the one you actually know quotes from, or /The Message/ (MSG) if I want easily readable modern English--and anyway, it would be much simpler not to have to depend on somebody maintaining a bunch of elisp and keeping an API online.
-
-  It would be much simpler if I just had the Bible in an org-mode file. You'd think this would already exist, but my Google-fu couldn't turn it up. Let's fix that.
-
-** Source Material
-    As I mentioned, I would like to have both the KJV and MSG translations (Bible afficionados have come up with three-letter abbreviations for each of the major Bible translations). KJV is 400 years old, so we don't have to worry about copyright concerns on that, and this is by far the easiest version to get hold of in its entirety, though it's usually in some kind of inconvenient format like one big text file without verse breaks. The best I've found is a JSON version from [[https://github.com/aruljohn/Bible-kjv][this random guy on Github]], which is kind of annoying in that each book is its own separate file, but that can easily be fixed. I grabbed the whole repo, and then deleted the whole .git folder, since I don't want to deal with sub-repos and I'm pretty sure the King James Bible isn't gonna be getting a lot of upstream patches that I'll need to track.
-    #+BEGIN_SRC sh
-$ git clone https://github.com/aruljohn/Bible-kjv.git
-Cloning into 'Bible-kjv'...
-remote: Counting objects: 144, done.
-remote: Total 144 (delta 0), reused 0 (delta 0), pack-reused 144
-Receiving objects: 100% (144/144), 1.59 MiB | 0 bytes/s, done.
-Resolving deltas: 100% (70/70), done.
-Checking connectivity... done.
-
-$ rm -rfv Bible-kjv/.git/
-removed 'Bible-kjv/.git/HEAD'
-removed 'Bible-kjv/.git/logs/HEAD'
-removed 'Bible-kjv/.git/logs/refs/heads/master'
-...and so on...
-removed directory 'Bible-kjv/.git/'
-    #+END_SRC
-
-    Next, I jumped into a Node shell (Javascript, in my opinion, will always be the best tool for manipulating JSON, unless it veers much further from its origins as actual Javascript source code than it has so far) and played around until I came up with this (almost) one-liner, which is none too pretty, but not too ugly either:
-
-    #+BEGIN_SRC javascript
-      #!/usr/bin/env node
-      fs = require('fs');
-      fs.writeFileSync("KJV.json",
-                       JSON.stringify(
-                           JSON.parse(fs.readFileSync("./Bible-kjv/Books.json"))//grab the names of all the books
-                               .map(function(b) {
-                                   //plop .json on the end and remove spaces to come up with the equivalent filename
-                                   return b.replace(/\ /g, "").replace(/$/, ".json");
-                               })
-                               .map(function(f) {
-                                   //read and parse those books into one big JSON array
-                                   return JSON.parse(fs.readFileSync("./Bible-kjv/" + f)); 
-                               })
-                           null, "\t")); //convert it back into JSON and write it out to disk, pretty-printed with tabs
-          
-    #+END_SRC
-
-    So now I've got a JSON file structured like:
-
-    #+BEGIN_SRC
-      [ // array of books
-          { //first book
-              "book": "Genesis",
-              "chapters": [ //array of chapters
-                  {
-                      "chapter":"1",
-                      "verses": [ //array of verses
-                          { //first verse
-                              "1": "In the beginning God created the heaven and the earth."
-                          },
-                          //...and the rest of the verse in this chapter
-                      ]
-                  },
-                  //...and the rest of the chapters in this book
-              ]
-          },
-          //...and the rest of the books in the Bible
-      ]
-    #+END_SRC
-
-    /The Message/ is actually a copyrighted work, and there are some restrictions on how it is used, so in theory I should be out of luck unless I want to contact the publisher with an offer to specially license the raw text or something. Luckily, [[https://github.com/honza/bibles/tree/master/MSG][this other random guy on Github]] has no such compunctinos and has /The Message/ in several different very nice machine readable formats with a each book, chapter, and verse broken down hierarchically in single JSON, YAML, or XML files. I grabbed the JSON version:
-
-    #+BEGIN_SRC sh
-$ wget https://raw.githubusercontent.com/honza/bibles/master/MSG/MSG.json
---2017-10-09 20:48:08--  https://raw.githubusercontent.com/honza/bibles/master/MSG/MSG.json
-Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 151.101.0.133, 151.101.64.133, 151.
-101.128.133, ...                                                                                     
-Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|151.101.0.133|:443... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 4702101 (4.5M) [text/plain]
-Saving to: ‘MSG.json’
-
-MSG.json                  100%[===================================>]   4.48M  --.-KB/s    in 0.07s   
-
-2017-10-09 20:48:08 (64.3 MB/s) - ‘MSG.json’ saved [4702101/4702101]
-    #+END_SRC
-
-    This MSG dump doesn't have exactly the same structure as the KSJ one I made (and unfortunately this =honza= character doesn't have a KJV dump available). Instead, it's structured like this:
-
-    #+BEGIN_SRC
-      {
-          "Genesis": {
-              "1": {
-                  "1": "First this: God created the Heavens and Earth--all you see, all you don't see.",
-                  //and then the rest of the verses in Genesis 1
-              }
-              //and then all the rest of the chapters in Genesis
-          },
-          "Exodus": {
-              //all the chapters and verse in Exodus
-          }
-      }
-    #+END_SRC
-
-    It's unclear which is better. I can see both sides. The KJV approach I took allows easy iteration over verses with a simple forEach, map, filter, or even just a for loop. The MSG approach allows readable access to any particular verse by writing, e.g. =console.log(Bible.John.3.16)=. I think the ideal Bible-as-Javascript-Object would include both, but writing the JSON that way would double its size, so I undertand the need to pick just one.
-
-    Our use case is simply generating org-mode text, so I think the KJV will be easier to use. Let's write our little script to make sure. If it is, we'll just convert the MSG.json to that same format.
-
-    OK, here goes:
-
-    #+BEGIN_SRC javascript
-
-    #+END_SRC
 
 * 2017-07-02 Worlds Most Useless (or maybe handiest) webserver :stupidprogrammingtricks:bash:http:
   I have a server that I use in a slightly eccentric way: it doesn't run a webserver at all. I do other things with it, mainly run =sshd= so that I always have relatively easy access to a unix machine that is connected to the internet (always handy) and, more importantly, which holds a screen session that, in turn, holds my emacs workspace. This allows me to sit down at any computer with an SSH client at any time and immediately have every open emacs buffer available to me from the last time I stood up, even if I did the standing up from my laptop at Denny's and the sitting down at a public computer at school or the library.
@@ -304,7 +194,7 @@ WantedBy=multi-user.target
    
    It's close enough that I can decide after work on any given day whether or not I'd like to go to a game that night, so I thought it might be nice to have Express home games show up in my Emacs org-mode agenda. I started by finding the Express schedule in iCal format. The MiLB uses a site called stanza.co to handle their calendaring (there are other formats as well) and it can be found [[https://www.stanza.co/timeline/milb-roundrockexpress#/v1/][here]]. Choosing either "Apple" or "Other" gives you an iCal file, since I guess iCal has become the de-facto calendar interchange format. Go figure.
 
-   Anyway, the reason I wanted an iCal is because somebody has helpfully already written an awk script that will take an iCal file and turn it into an org-mode one. It's called /ical2org.awk/ and you can get it [[http://orgmode.org/worg/code/awk/ical2org.awk][here]]. 
+   Anyway, the reason I wanted an iCal is because somebody has helpfully already written an awk script that will take an iCal file and turn it into an org-mode one. It's called =ical2org.awk= and you can get it [[http://orgmode.org/worg/code/awk/ical2org.awk][here]]. 
 
    Note that the default Ubuntu 16.04 awk is *not* =gawk=, as literally everyone would expect and prefer. It's some other one that nobody's ever heard of called =mawk=. Since the author of ical2org.awk is a practical-minded person, it relies on some gawk-isms, and you'll obviously want to uninstall mawk and install gawk instead. You could install them side by side, but honestly you probably want =gawk= anyway, so take this opportunity to uncripple your system. With that out of the way, you can go ahead and run the conversion:
 
@@ -453,26 +343,26 @@ The good news is that the service is nearly ready for launch. The even better ne
 While I certainly don't anticipate that the launch of the hosted service will result in my having /more/ free time, I am planning on making regular posts on billipede.net a higher priority over the coming months, and have a few posts already gestating for upcoming release.
 
 * 2015-05-09 Dawn			    :projects:dawn:parsers:languages:
-   /Dawn/ is something that I've been working on as an answer to the question that I believe a lot of developers (amateur and professional) find themselves asking, even if they never quite formulate it this way: "Why is it so much easier to hack together a CLI script than a web application?"
+   =Dawn= is something that I've been working on as an answer to the question that I believe a lot of developers (amateur and professional) find themselves asking, even if they never quite formulate it this way: "Why is it so much easier to hack together a CLI script than a web application?"
 
 I think that part of the answer is that our development tools were born in the *nix shell environment, and that they simply haven't evolved very much to accomodate web-style UI/UX and deployment practices. In order to begin writing and testing a shellscript, all I need to do is type =vim= and I'm off and coding. "Deploying" the script usually as simple as =chmod +x=.
 
 By contrast, consider the simplest possible scenario for deploying a web application, one that requires no back-end for storing state, managing users, and so on. Something braindead easy, like a tip calculator. Most experienced *nix hands wouldn't even write a script for this, but simply use =bc=, =dc= , or even =python= as suits their fancy. Let's imagine, though, that we want to write a standalone script and deploy it on a web-accessible page so that grandma can use it on her three-year-old Windows Phone at the Cracker Barrel. At the very simplest, we need to create an HTML document to serve to the phone, the Javascript to implement the calculator, provision a server or otherwise find some web space for it, and upload the files to the server or service. There are tons of libraries, frameworks, and deployment tools that make all of this easier, but none of them remove the need to do these basic things.  It's all a pain in the ass, and its a bad model if we want to have the same fluency on the web that we do in our beloved *nix shell.
 
-/So /Dawn/ should live completely in the browser. The development environment should be the same as the deployment environment, just like a CLI app./
+So =Dawn= should live completely in the browser. The development environment should be the same as the deployment environment, just like a CLI app.
 
 Worse, if we want someone other than ourselves or grandma to use the app, we'll need to spend some time making it look nice. This means using some kind of pre-written theme or CSS framework, lots of fiddly CSS changes, or both. Without this, our web application looks like a joke to a user-base that is used to their web applications seeing the same attention to design detail as Soviet propaganda posters and glossy architecture magazines. People don't want their web experience to look like a university course website from 1998.
 
-/So /Dawn/ applications should look respectable by default, without needing additional frameworks./
+So =Dawn= applications should look respectable by default, without needing additional frameworks.
 
 The other problem with the arms race of design and faddish, complex, layouts is that we're constantly reinventing the basic vocabulary users have to interact with web pages and applications. The worst example of this is the wave of monstrous sites that will actually scroll left for desktop users when they spin their scroll wheel down. Instead of contantly changing the semantics of our web applications based on design fads, or in a misguided attempt to make them more "intuitive", we should instead realize that the best UI is one that is eminently familiar to the user, and that the only way users can /become/ familiar, and therefore adept, at using an interface, is if we /leave it alone/ and give them a chance to learn it.
 
-/So /Dawn/ applications should have a consistent UI paradigm that is
-stable and cannot be changed by ordinary applications./
+So =Dawn= applications should have a consistent UI paradigm that is
+stable and cannot be changed by ordinary applications.
 
-/Dawn/ therefore will attempt to address all of these concerns, but it starts with a simple language. Why not just use Javascript? Because it's big. The ECMAscript specification is a [[http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf][258-page PDF]], and that's just the language itself, not including the [[http://www.w3.org/DOM/DOMTR][DOM]] or [[http://www.w3.org/TR/html5/][HTML]] specs and the other documents they reference. Dawn is inspired by the [[http://www.latrobe.edu.au/humanities/research/research-projects/past-projects/joy-programming-language][Joy]] language, which is very small, has homoiconicity, and some other interesting properties like being concatenative (=x foo bar baz= in /Joy///Dawn/ is the same as =baz(bar(foo(x)))= in traditional notation).  I admit that this RPN-style notation may not be the most developer-friendly, but it does simplify the execution model (depending on the point of view, there is either no state, or the stack is the only state). There are also ways I can explore of providing a more traditional /ALGOL/-ish syntax while maintaining some of these benefits.
+=Dawn= therefore will attempt to address all of these concerns, but it starts with a simple language. Why not just use Javascript? Because it's big. The ECMAscript specification is a [[http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf][258-page PDF]], and that's just the language itself, not including the [[http://www.w3.org/DOM/DOMTR][DOM]] or [[http://www.w3.org/TR/html5/][HTML]] specs and the other documents they reference. Dawn is inspired by the [[http://www.latrobe.edu.au/humanities/research/research-projects/past-projects/joy-programming-language][Joy]] language, which is very small, has homoiconicity, and some other interesting properties like being concatenative (=x foo bar baz= in Joy is the same as =baz(bar(foo(x)))= in traditional notation).  I admit that this RPN-style notation may not be the most developer-friendly, but it does simplify the execution model (depending on the point of view, there is either no state, or the stack is the only state). There are also ways I can explore of providing a more traditional =ALGOL=-ish syntax while maintaining some of these benefits.
 
-/Dawn/ is very much a work in progress and not especially useful for any real-world purpose yet. In particular, there is no way to "save" programs besides copy and pasting them into the console command line, but it is already fun to play with, which you can do [[http://billipede.net/dawn.html][here]]. An overview of the extant operators is below.
+=Dawn= is very much a work in progress and not especially useful for any real-world purpose yet. In particular, there is no way to "save" programs besides copy and pasting them into the console command line, but it is already fun to play with, which you can do [[http://billipede.net/dawn.html][here]]. An overview of the extant operators is below.
 
 ** 'plus', 'times', 'minus', and 'divide'
 
@@ -515,7 +405,7 @@ Execute the list on the top of the stack as if it were a program.  Without getti
 
 ** 'ifdo', 'loopdo'
 
-Simple control operators that operate similar to =do= but conditionally.  =ifdo= will look at the top of the stack, and if it is /truthy/, it will execute the list underneat it as if =do= had been called. =loopdo= will simply execute a list the number of times specified by the number on the top of the stack.
+Simple control operators that operate similar to =do= but conditionally.  =ifdo= will look at the top of the stack, and if it is "truthy", it will execute the list underneat it as if =do= had been called. =loopdo= will simply execute a list the number of times specified by the number on the top of the stack.
 
 * 2015-02-14 Let's Write a Parser	      :bloviations:languages:parsers:
 Parsers are super useful. Without them, we would all have to operate and program our computers by twiddling switches directly in machine language like [[http://www.cs.yale.edu/homes/tap/Files/hopper-story.html][Grace Hopper]] or [[http://www.cs.utah.edu/~elb/folklore/mel.html][Mel]] did in the [[http://ageofempires.wikia.com/wiki/Dark_Age][Dark Ages]].
@@ -544,7 +434,7 @@ Actually, I decided to use square brackets in mine, and not just because I like 
 
 Great, we've decided what the syntax is that we're going to parse! Now, we probably just need to write it up in code and we'll be all set. From here on out, it's just a [[http://www.catb.org/jargon/html/S/SMOP.html][small matter of programming]], right? Actually, no, we still have to do basically all the actual work of defining the grammar since, while you and I could read my description above and completely understand how to interpret =[2 + [2 + 2]]= or =[100 * [4 / 1.927]]=, it's not actually specific enough to satisfy a computer.
 
-Instead, we'll need to come up with a /formal grammar/, which sounds intimidating, and kind of is, but is really not that hard to figure out.  There's something called [[http://en.wikipedia.org/wiki/Backus%E2%80%93Naur_Form][Backus-Naur Form]] which also sounds intimidating, and also kind of is, but similarly is not very hard to grok if you just focus for a second (i.e.  put down your phone, close your mail client and crack a beer, pour a coffee, or brew some tea).
+Instead, we'll need to come up with a "formal grammar", which sounds intimidating, and kind of is, but is really not that hard to figure out.  There's something called [[http://en.wikipedia.org/wiki/Backus%E2%80%93Naur_Form][Backus-Naur Form]] which also sounds intimidating, and also kind of is, but similarly is not very hard to grok if you just focus for a second (i.e.  put down your phone, close your mail client and crack a beer, pour a coffee, or brew some tea).
 
 There's this funny operator =::== that you can think of as a symbol that is used to specify the rules of the grammar. It could just as well be an equals sign, but I guess Backus and Naur liked to be contrary, which is something I can respect. I like to think of =::== as just meaning "is made up of."
 
@@ -804,7 +694,7 @@ Now, while this helps to show the basic shape of a recursive descent parser, it 
 All of these are left as an exercise for the reader, or maybe me at some point, but not today.
 
 * 2015-01-17 Trees are Just Lists			:bloviations:parsers:
-Trees are just lists of lists. That may sounds obvious to you if you hang out on comp.lang.scheme, know what a /closure/ is, or really if you've ever used the word "tree" to describe something that isn't made of wood. Still, it's a significant fact, and it would be nice if the developers or specifiers of standard libraries in dynamic, scripty languages would remember it. Specifically, I'm kvetching about the fact that Javascript doesn't have, so far as I can tell, a built-in array "map" function that can recursively walk sub-arrays. I can see that there might be situations where one might want to =map= only the top level of an Array of Arrays, but can't we just use =forEach= or even just plain old =for=?
+Trees are just lists of lists. That may sounds obvious to you if you hang out on comp.lang.scheme, know what a zclosure is, or really if you've ever used the word "tree" to describe something that isn't made of wood. Still, it's a significant fact, and it would be nice if the developers or specifiers of standard libraries in dynamic, scripty languages would remember it. Specifically, I'm kvetching about the fact that Javascript doesn't have, so far as I can tell, a built-in array "map" function that can recursively walk sub-arrays. I can see that there might be situations where one might want to =map= only the top level of an Array of Arrays, but can't we just use =forEach= or even just plain old =for=?
 
 In any case, in the hopes that others on the internet may need a recursive Javascript =map= in a pinch and don't want to spend 5 minutes writing one themselves, I give you this:
 
