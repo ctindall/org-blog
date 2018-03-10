@@ -1,0 +1,8 @@
+[Unit]
+Description=Orgblog API
+
+[Service]
+ExecStart=/usr/local/bin/orgblog
+
+[Install]
+WantedBy=multi-user.target

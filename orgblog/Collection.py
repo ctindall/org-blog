@@ -1,4 +1,4 @@
-from Org import OrgParser
+from .Org import OrgParser
 
 import pystache
 import re
