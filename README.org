@@ -1,32 +1,42 @@
-* What Is This?
 
-  There's no shortage of advice online about how to set up a simple (or not-so-simple) blog using org-mode in Emacs. Most of this advice assumes a lot of things that aren't true about me:
-
-  - I am not that comfortable with writing/editing large globs of mostly impenetrable elisp source.
-  - I don't really want a static site generator, since that adds a build step, and I'd rather be able to just make my edits and go.
-  - I don't really want to deal with the really-quite-confusing and dense HTML that org-mode's default exporter comes with.
-  - I don't really want to export from org-mode to Jekyll just so I can have Jekyll do the formatting for me.
-
-  In short, my ideal solution didn't exist, so I made it. This project:
-
-  - is not a static generator. Pages are built per-request, so updating is as simple as changing the source files,
-  - does not require a makefile or any build steps to update my site
-  - uses a simple single org file (=entries.org=), plus a couple Mustache templates, and a smal JSON config file as its only input.
-
+* Demo
+  I use =orgblog= on my blog at [[https://billipede.net/][https://billipede.net]] but I'm sure you'll come up with a nicer template than mine.
 * Quickstart 
 
   orgblog is available in PyPi, so installation is a simple =pip install orgblog=.
 
-   To get started,  =org-blog --install-default-conf --install-default-templates --install-test-file=. This will populate =~/.orgblog.json=, =~/.orgblog/collections/=, and  =~/.orgblog/templates/= so you can get up and running. Then just run the =orgblog= command to start the server on localhost.
+   To get started,  do a =orgblog --install-default-conf --install-default-templates --install-test-file=. This will populate =~/.orgblog.json=, =~/.orgblog/collections/=, and  =~/.orgblog/templates/= so you can get up and running. Then just run the =orgblog= command to start the server on localhost.
 
    #+BEGIN_SRC
  ~ $ orgblog 
  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
    #+END_SRC
 
+   You'll probably want to [[Configuration][configure things]] a little first, and more than likely [[Templates][customize your template]] some too.
+* What Is This?
+
+  There's no shortage of advice online about how to set up a simple (or not-so-simple) blog using org-mode in Emacs. Most of this advice assumes a lot of things that aren't true about me:
+
+  - I am not that comfortable with writing/editing large globs of mostly impenetrable elisp source.
+  - I don't want a static site generator, since that adds a build step, and I'd rather be able to just make my edits and go.
+  - I don't want to deal with the really-quite-confusing and dense HTML that org-mode's default exporter comes coughs up.
+  - I don't want to export from org-mode to some other intermediate format (like Jekyll) on my way from org-mode to serveable HTML.
+
+  In short, my ideal solution didn't exist, so I made it.
+
+* Collections
+  Your "blog" can have more than one collection. If you are creating a real blog, you will probably want to call this collection "posts". Each collection is a single org-mode formatted file. The top-level headings in this file are assumed to be items in this collection.
 
 * Configuration
-   org-blog looks for a site-wide configuration file in =/etc/org-blog.json= first. If there's none there, it will check =~/.org-blog.json= next. Finally it will use some default internal values. These are the configuration settings currently supported:
+   orgblog looks for a site-wide configuration file in =/etc/orgblog.json= first. If there's none there, it will check =~/.orgblog.json= next. Finally it will use some default internal values. These are the configuration settings currently supported:
+
+*** host
+    Default: =127.0.0.1=
+    What IP address the server listen on for web requests.
+
+*** port
+    Default: =5000=
+    What port the server will listen on for web requests.
 
 *** collections_directory
     Default: =~/.orgblog/collections/=
@@ -38,12 +48,8 @@
 
 ** Startup
    Once you have your site configured, you can 
-
-* Collections
-  Your "blog" can have more than one collection. If you are creating a real blog, you will probably want to call this collection "posts". Each collection is a single org-mode formatted file. The top-level headings in this file are assumed to be items in this collection.
-
 * Templates
-  Templating uses the [[https://github.com/defunkt/pystache][pystache]] library, which gives a familiar mustache or "double-hug" syntax. Templates are kept in the configured =template_directory= (see the [[Configuration][section on configuration]] section for more information on finding or configuring this directory).
+  Templating uses the [[https://github.com/defunkt/pystache][pystache]] library, which gives a familiar mustache or "double-hug" syntax. Templates are kept in the configured =template_directory= (see the [[Configuration][section on configuration]]).
 
 ** Main Template
    The root page of your site (the one at =/=) is built from a template called =index.html= in the templates directory. This template has access to all collections via its context. For example, if you have a =posts.org= and a =projects.org= file in your =collections_directory=, the =index.html= template will have access to two collections: =posts= and =projects=.
@@ -58,6 +64,3 @@
   In the context of a blog, =items.html= would be used for the =/posts= url, while =items.html= would be used for a url like =/posts/2018-06-01-its-my-birthday-again=.
 
   =tag.html= is used for constructing a page which will show items in a collection with a particular tag. In the blog use-case, this would be a page like =/posts/tag/hotdogs= containing a list of posts with the =hotdog= tag. The context it receives is similar to the one =items.html= receoves except the ={{#items}}= list only contains the appropriately-tagged items, and there is an additional string variable ={{tag}}== to tell the template what tag the page is for.
-
-* Demo
-  I use =orgblog= on my blog at [[https://billipede.net/][https://billipede.net]] but I'm sure you'll come up with a nicer template than mine.
