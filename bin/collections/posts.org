@@ -1,0 +1,12 @@
+* 2018-01-01 Hello!
+  Welcome to =orgblog=. Have a look at the documentation and get the latest version [[https://github.com/ctindall/org-blog][on github]]
+
+  #+BEGIN_SRC 
+  This is a source block!
+  #+END_SRC
+
+* 1969-07-20 Baby Steps
+  When Armstrong again looked outside, he saw that the computer's landing target was in a boulder-strewn area just north and east of a 300-meter (980 ft) diameter crater (later determined to be West crater, named for its location in the western part of the originally planned landing ellipse). Armstrong took semi-automatic control and, with Aldrin calling out altitude and velocity data, landed at 20:17:40 UTC on Sunday July 20 with about 25 seconds of fuel left.
+
+* 1969-07-16 Blastoff
+  A Saturn V launched Apollo 11 from Launch Pad 39A, part of the Launch Complex 39 site at the Kennedy Space Center on July 16, 1969, at 13:32:00 UTC (9:32:00 a.m. EDT local time). It entered Earth orbit, at an altitude of 100.4 nautical miles (185.9 km) by 98.9 nautical miles (183.2 km), twelve minutes later.

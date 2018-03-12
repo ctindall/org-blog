@@ -13,11 +13,37 @@
   - does not require a makefile or any build steps to update my site
   - uses a simple single org file (=entries.org=), plus a couple Mustache templates, and a smal JSON config file as its only input.
 
+* Quickstart 
+
+  orgblog is available in PyPi, so installation is a simple =pip install orgblog=.
+
+   To get started,  =org-blog --install-default-conf --install-default-templates --install-test-file=. This will populate =~/.orgblog.json=, =/var/org-blog/collections/=, and  =/var/org-blog/templates/= so you can get up and running. Then just run the =orgblog= command to start the server on localhost.
+
+   #+BEGIN_QUOTE 
+ ~ $ orgblog 
+ * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+   #+END_QUOTE
+
+
+* Configuration
+   org-blog looks for a site-wide configuration file in =/etc/org-blog.json= first. If there's none there, it will check =~/.org-blog.json= next. Finally it will use some default internal values. These are the configuration settings currently supported:
+
+*** collections_directory
+    Default: =~/.orgblog/collections/=
+    This is the full path to the directory containing org files which represent collections.
+
+*** template_directory
+   Default: =~/.orgblog/templates/=
+   This is the full path to the directory containting collection templates. Each collection shoud have its own subdirectory with an =items.html=, =item.html=, and =tag.html=. This is better explained in the later [[Templates][section on templates]]. 
+
+** Startup
+   Once you have your site configured, you can 
+
 * Collections
   Your "blog" can have more than one collection. If you are creating a real blog, you will probably want to call this collection "posts". Each collection is a single org-mode formatted file. The top-level headings in this file are assumed to be items in this collection.
 
 * Templates
-  Templating uses the [[https://github.com/defunkt/pystache][pystache]] library, which gives a familiar mustache or "double-hug" syntax. Templates are kept in the configured =template_directory= (see the [[Configuration]] section for more information on finding or configuring this directory).
+  Templating uses the [[https://github.com/defunkt/pystache][pystache]] library, which gives a familiar mustache or "double-hug" syntax. Templates are kept in the configured =template_directory= (see the [[Configuration][section on configuration]] section for more information on finding or configuring this directory).
 
 ** Main Template
    The root page of your site (the one at =/=) is built from a template called =index.html= in the templates directory. This template has access to all collections via its context. For example, if you have a =posts.org= and a =projects.org= file in your =collections_directory=, the =index.html= template will have access to two collections: =posts= and =projects=.
@@ -25,29 +51,13 @@
 ** Collection Templates
    In addition to the =index.html= template, each collection needs two template files, a =<collection_name>/items.html= file and a =<collection_name>/item.html=.  
   
-  =items.html= is used to construct the "index" page for that collection. It has in its context a list called =items=, which contains the context of the whole collection, allowing you to write out a list.
+  =items.html= is used to construct the "index" page for that collection. It has in its context a list called ={{#items}}=, which contains the context of the whole collection, allowing you to write out a list.
 
-  =item.html= , while the latter is used to construct the individual item pages. It has in its context only the information about a single item, available in the variable called =item=.
+  =item.html= , while the latter is used to construct the individual item pages. It has in its context only the information about a single item, available in the variable called ={{item}}=.
 
   In the context of a blog, =items.html= would be used for the =/posts= url, while =items.html= would be used for a url like =/posts/2018-06-01-its-my-birthday-again=.
 
-* Configuration
-  org-blog looks for a site-wide configuration file in =/etc/org-blog.json= first. If there's none there, it will check =~/.org-blog.json= next. Finally it will use some default internal values. There are the configuration settings currently supported:
+  =tag.html= is used for constructing a page which will show items in a collection with a particular tag. In the blog use-case, this would be a page like =/posts/tag/hotdogs= containing a list of posts with the =hotdog= tag. The context it receives is similar to the one =items.html= receoves except the ={{#items}}= list only contains the appropriately-tagged items, and there is an additional string variable ={{tag}}== to tell the template what tag the page is for.
 
-** collections_directory
-   Default: =/var/org-blog/collections/=
-   This is the full path to the directory containing org files which represent collections.
-
-** template_directory
-   Default: =/var/org-blog/templates/=
-   This is the full path to the directory containting collection templates. Each collection shoud have its own subdirectory with an =item.html= and an =items.html=. A basic blog might look like this:
-
-#+BEGIN_SRC 
-.
-└── posts
-    ├── item.html
-    └── items.html
-#+END_SRC
-
-* Work In Progress
-  This is still a work in progress. I'm not using it on any of my own sites yet.
+* Demo
+  =orgblog= is being used on my blog at [[https://billipede.net/][https://billipede.net]] (though I'm sure you'll come up with a nicer template than mine).

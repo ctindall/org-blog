@@ -1,5 +1,44 @@
 #!/usr/bin/env python3
 from orgblog import OrgBlogApp
+from orgblog import Config
+from optparse import OptionParser
 
+import os
+import shutil
+
+optparser = OptionParser()
+
+def copy_defaults(src, dest):
+    if os.path.isdir(dest):
+        raise Exception("Cowardly refusing to copy to " + dest + " because it already exists.")
+    else:
+        print("Installing default files to " + dest)
+        shutil.copytree(src, dest)
+
+optparser.add_option("--install-default-conf",
+                     "--install-default-config",
+                     action="store_true",
+                     dest="install_default_conf")
+optparser.add_option("--install-default-templates",
+                     action="store_true",
+                     dest="install_default_templates")
+optparser.add_option("--install-test-posts",
+                     action="store_true",
+                     dest="install_test_posts")
+(options, args) = optparser.parse_args()    
+
+if options.install_default_conf:
+    Config.install_default()
+
+if options.install_default_templates:
+    source = os.path.join(os.path.dirname(__file__), "templates")
+    destination = Config.lookup("template_directory")
+    copy_defaults(source, destination)
+    
+if options.install_test_posts:
+    source = os.path.join(os.path.dirname(__file__), "collections")
+    destination = Config.lookup("collections_directory")
+    copy_defaults(source, destination)
+    
 app = OrgBlogApp()
 app.run()
