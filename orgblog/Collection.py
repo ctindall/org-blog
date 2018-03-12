@@ -52,15 +52,23 @@ class CollectionManager():
     def get_all_collection_items(self, collection_slug, format=None):
         
         if format == "html" and not self.__items_template_exists(collection_slug):
-            raise LookupError("There is no index file for the collection '" + collection_slug + "'")
+            raise LookupError("There is no items.html template for the collection '" + collection_slug + "'")
         
         for c in self.get_all_collections():
             if c.get_slug() == collection_slug:
                 return c.get_items(format=format)
             
         raise LookupError("The collection '" + collection_slug + "' does not exist")
+
+    def __item_template_exists(self, collection_slug):
+        template_path = os.path.join(self.__template_directory, collection_slug, "item.html")
+        print("checking " + template_path)
+        return os.path.exists(template_path)
     
     def get_collection_item(self, collection_slug, item_slug, format=None):
+        if format == "html" and not self.__item_template_exists(collection_slug):
+            raise LookupError("There is no item.html template for the collection '" + collection_slug + "'")
+        
         for c in self.get_all_collections():
             if c.get_slug() == collection_slug:
                 return c.get_item(item_slug, format=format)
