@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='orgblog',
-      version='0.06',
+      version='0.07',
       description='easy web publishing with org-mode files',
       url='http://github.com/ctindall/org-blog',
       author='Cameron Tindall',
