@@ -46,7 +46,6 @@ class CollectionManager():
 
     def __items_template_exists(self, collection_slug):
         template_path = os.path.join(self.__template_directory, collection_slug, "items.html")
-        print("checking " + template_path)
         return os.path.exists(template_path)
         
     def get_all_collection_items(self, collection_slug, format=None):
@@ -62,7 +61,6 @@ class CollectionManager():
 
     def __item_template_exists(self, collection_slug):
         template_path = os.path.join(self.__template_directory, collection_slug, "item.html")
-        print("checking " + template_path)
         return os.path.exists(template_path)
     
     def get_collection_item(self, collection_slug, item_slug, format=None):
@@ -73,7 +71,14 @@ class CollectionManager():
             if c.get_slug() == collection_slug:
                 return c.get_item(item_slug, format=format)
 
+    def __tag_template_exists(self, collection_slug):
+        template_path = os.path.join(self.__template_directory, collection_slug, "tag.html")
+        return os.path.exists(template_path)
+
     def get_all_collection_items_with_tag(self, collection_slug, tag_slug, format=None):
+        if format == "html" and not self.__tag_template_exists(collection_slug):
+            raise LookupError("There is no tag.html template for the collection '" + collection_slug + "'")
+
         for c in self.get_all_collections():
             if c.get_slug() == collection_slug:
                 return c.get_items_with_tag(tag_slug, format=format)
