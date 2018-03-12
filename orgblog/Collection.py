@@ -44,7 +44,16 @@ class CollectionManager():
         else:
             return self.__context
 
+    def __items_template_exists(self, collection_slug):
+        template_path = os.path.join(self.__template_directory, collection_slug, "items.html")
+        print("checking " + template_path)
+        return os.path.exists(template_path)
+        
     def get_all_collection_items(self, collection_slug, format=None):
+        
+        if format == "html" and not self.__items_template_exists(collection_slug):
+            raise LookupError("There is no index file for the collection '" + collection_slug + "'")
+        
         for c in self.get_all_collections():
             if c.get_slug() == collection_slug:
                 return c.get_items(format=format)
