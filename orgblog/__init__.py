@@ -1,5 +1,6 @@
 from flask import Flask,redirect,abort
 import json
+import os
 
 #our stuff
 from .Config import *
@@ -12,8 +13,13 @@ class OrgBlogApp:
 
         @self.__app.route("/", methods=["GET"])
         def route_root():
-            collection_manager = CollectionManager(config)
-            return collection_manager.get_all_collections(format="html")
+            index_template = os.path.join(Config.lookup("template_directory"), "index.html")
+            
+            if not os.path.exists(index_template) or not os.path.isfile(index_template):
+                abort(404)
+            else:
+                collection_manager = CollectionManager(config)
+                return collection_manager.get_all_collections(format="html")
 
         @self.__app.route("/<string:collection_slug>/", methods=["GET"])
         @self.__app.route("/<string:collection_slug>", methods=["GET"])
