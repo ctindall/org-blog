@@ -5,6 +5,10 @@ release:
 	git commit -m"cutting release"
 	git tag v$(v) HEAD
 	python3 setup.py sdist upload -r pypi
+	git push origin master
+	git push github master
+	git push --tags origin
+	git push --tags github
 
 test-release:
 	python3 setup.py install
