@@ -1,4 +1,4 @@
-from flask import Flask,redirect,abort
+from flask import Flask,redirect,abort,send_from_directory,safe_join
 import json
 import os
 
@@ -8,9 +8,11 @@ from .Collection import CollectionManager
 
 class OrgBlogApp:
     def __init__(self):
-        self.__app = Flask(__name__)
         config = Config.read()
-
+        self.__app = Flask(__name__,
+                           static_folder=Config.lookup("static_directory"),
+                           static_url_path="/static")
+        
         @self.__app.route("/", methods=["GET"])
         def route_root():
             index_template = os.path.join(Config.lookup("template_directory"), "index.html")

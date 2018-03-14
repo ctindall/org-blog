@@ -4,6 +4,7 @@ import os
 defaults = { 
     "collections_directory": "~/.orgblog/collections/",
     "template_directory": "~/.orgblog/templates/",
+    "static_directory": "~/.orgblog/static/",
     "host": "127.0.0.1",
     "port": "5000"
 }
