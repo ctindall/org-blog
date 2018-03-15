@@ -92,6 +92,7 @@ class Collection:
         self.__orgfile_path = os.path.join(config['collections_directory'], collection_slug + ".org")
         self.__template_directory = config['template_directory']
         self.__collection_slug = collection_slug
+        self.__visible_todo_statuses = config["visible_todo_statuses"]
 
     def __slugify(self, slug):
         slug = re.sub(r"[^\w\s-]", '', slug)#remove weird characters
@@ -106,15 +107,19 @@ class Collection:
         op = OrgParser()
         items = op.load(self.__orgfile_path)
         for i in items:
-            item = {}
-            item['title'] = i.get_title()
-            item['slug'] = self.__slugify(item['title'])
-            item['html'] = i.to_html()
-            item['tags'] = i.get_tags()
-            item['todo_status'] = i.get_todo_status()
-            
-            self.context['items'].append(item)
-    
+            if i.get_todo_status() in self.__visible_todo_statuses:
+                # The template context should exclude unfinished
+                # posts. By default, we only show those with the
+                # status 'DONE'.
+                item = {}
+                item['title'] = i.get_title()
+                item['slug'] = self.__slugify(item['title'])
+                item['html'] = i.to_html()
+                item['tags'] = i.get_tags()
+                item['todo_status'] = i.get_todo_status()
+
+                self.context['items'].append(item)
+                
     def get_items(self, format=None):
         self.__updateContext()
         
