@@ -111,6 +111,7 @@ class Collection:
             item['slug'] = self.__slugify(item['title'])
             item['html'] = i.to_html()
             item['tags'] = i.get_tags()
+            item['todo_status'] = i.get_todo_status()
             
             self.context['items'].append(item)
     
