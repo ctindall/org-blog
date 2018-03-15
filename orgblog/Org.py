@@ -35,6 +35,7 @@ class OrgEntry:
         self.__subentries = []
         self.__superentries = []
         self.__sections = []
+        self.__todo_status = ""
         
     #title
     def set_title(self, title):
@@ -64,6 +65,13 @@ class OrgEntry:
             
         return tags
 
+    #TODO status
+    def set_todo_status(self, status):
+        self.__todo_status = status
+
+    def get_todo_status(self):
+        return self.__todo_status
+    
     #superentries
     def add_superentry(self, entry):
         self.__superentries.append(entry)
@@ -79,7 +87,7 @@ class OrgEntry:
     def get_subentries(self):
         return self.__subentries
 
-    #sectionss
+    #sections
     def add_section(self, section):
         self.__sections.append(section)
 
@@ -211,7 +219,12 @@ class OrgParser:
 
     def __init__(self):
         self.__settings = {}
+        self.set_setting("TODO", "TODO | DONE") #default TODO states
 
+    def get_valid_todo_statuses(self):
+        words = self.get_setting("TODO").split()
+        return [word for word in words if word != "|"]
+        
     def get_setting(self, setting_name):
         return self.__settings[setting_name]
 
@@ -237,17 +250,26 @@ class OrgParser:
     def __parse_heading_line(self, level=1):
         if self.__peek():
             line_without_tags = re.sub('(\s+)?(\:.*\:)(\s+)?$', "", self.__peek())
-            match = re.search('^(\*+)(\s)(.*)(\:.*\:)?', line_without_tags)
+            match = re.search('^(\*+)(\s)([A-Z]+)?(\s+)?(.*)(\:.*\:)?', line_without_tags)
             if not match:
                 raise OrgParseError("trouble parsing heading at line " + str(self.__stream.get_line_number()))
-            
+
+            todo_status = match.group(3)
             parsed_level = len(match.group(1))
-            title = match.group(3)
+            title = match.group(5)
+
+            if todo_status not in self.get_valid_todo_statuses():
+                # If the parsed TODO status is not actually a valid
+                # status, then we were mistaken and the todo_status is
+                # really part of the title. Add it back, along with
+                # the white space that we thought separated them.
+                title = todo_status + match.group(4) + title
+                todo_status = ""
 
             if match and parsed_level == level:
-                return title, level
+                return title, level, todo_status
             
-        return None, None
+        return None, None, None
     
     def __parse_regular_line(self):
         if self.__peek():
@@ -345,6 +367,11 @@ class OrgParser:
             if match:
                 option = match.group(1)
                 value = match.group(2)
+
+                #we're not looking for #+BEGIN_* and #+END_* lines, since those are handled elsewhere 
+                if re.search('^(BEGIN|END)_', option):
+                    return False, False
+                
                 return option, value
 
         return False, False
@@ -362,13 +389,14 @@ class OrgParser:
 
         self.__parse_settings_lines()
         
-        my_title, my_level = self.__parse_heading_line(level=level);
+        my_title, my_level, my_todo_status = self.__parse_heading_line(level=level);
         if my_title and my_level == level:
             #start a new entry
             entry = OrgEntry()
 
             entry.set_title(my_title)
             entry.set_level(my_level)
+            entry.set_todo_status(my_todo_status)
             entry.add_tags(self.__parse_tags())
             self.__stream.eat()             #we're done with the heading line
 

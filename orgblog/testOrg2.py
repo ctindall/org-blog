@@ -3,8 +3,8 @@ import Config
 import os
 
 op = OrgParser()
-#entries = op.load(os.path.join(Config.lookup("collections_directory"), "posts.org"))
-entries = op.load("/home/cam/org/work.org")
+entries = op.load(os.path.join(Config.lookup("collections_directory"), "posts.org"))
+#entries = op.load("/home/cam/org/work.org")
 
 def show_entry(e,level):
     indent = ""
@@ -14,6 +14,9 @@ def show_entry(e,level):
     print(indent + "title:")
     print(indent + e.get_title())
 
+    print(indent + "TODO:")
+    print(indent + e.get_todo_status())
+    
     print(indent + "level:")
     print(indent + str(e.get_level()))
 
