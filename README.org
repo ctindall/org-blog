@@ -46,6 +46,9 @@
    Default: =~/.orgblog/templates/=
    This is the full path to the directory containting collection templates. Each collection shoud have its own subdirectory with an =items.html=, =item.html=, and =tag.html=. This is better explained in the later [[Templates][section on templates]]. 
 
+*** visible_todo_statuses
+    Default: =["DONE"]=
+    This configures what TODO statuses =orgblog= will consider "done". By default, this is only those posts marked =DONE=, but the option is a list and can contain any number of values. Add the emptry string (=""=) in order to show posts with no status at all.
 ** Startup
    Once you have your site configured, you can 
 * Templates
