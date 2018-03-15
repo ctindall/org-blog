@@ -209,6 +209,18 @@ class LineStream:
     
 class OrgParser:
 
+    def __init__(self):
+        self.__settings = {}
+
+    def get_setting(self, setting_name):
+        return self.__settings[setting_name]
+
+    def get_all_settings(self):
+        return self.__settings
+    
+    def set_setting(self, setting_name, setting_value):
+        self.__settings[setting_name] = setting_value
+
     def load(self, filename):
         return self.loads(open(filename).read())
 
@@ -222,7 +234,6 @@ class OrgParser:
     def __peek(self):
         return self.__stream.peek()
     
-
     def __parse_heading_line(self, level=1):
         if self.__peek():
             line_without_tags = re.sub('(\s+)?(\:.*\:)(\s+)?$', "", self.__peek())
@@ -327,9 +338,29 @@ class OrgParser:
         self.__eat_blank_lines()
         section = self.__parse_regular_text_section() or self.__parse_source_section()
         return section
+
+    def __parse_settings_line(self):
+        if self.__peek():
+            match = re.search('^\#\+([^\:]+)\:(.*)$', self.__peek())
+            if match:
+                option = match.group(1)
+                value = match.group(2)
+                return option, value
+
+        return False, False
     
+    def __parse_settings_lines(self):
+        option, value = self.__parse_settings_line()
+        while option and value:
+            self.set_setting(option, value)
+            self.__eat()
+            self.__eat_blank_lines()
+            option, value = self.__parse_settings_line()
+            
     def __parse_entry(self, level=1):
         self.__eat_blank_lines()
+
+        self.__parse_settings_lines()
         
         my_title, my_level = self.__parse_heading_line(level=level);
         if my_title and my_level == level:
