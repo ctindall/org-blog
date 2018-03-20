@@ -25,6 +25,11 @@ optparser.add_option("--install-default-templates",
 optparser.add_option("--install-test-posts",
                      action="store_true",
                      dest="install_test_posts")
+optparser.add_option("--static",
+                     dest="static",
+                     action="store_true",
+                     help="Generate site statically instead of serving it.")
+
 (options, args) = optparser.parse_args()    
 
 if options.install_default_conf:
@@ -46,6 +51,12 @@ if options.install_test_posts:
     source = os.path.join(os.path.dirname(__file__), "collections")
     destination = Config.lookup("collections_directory")
     copy_defaults(source, destination)
-    
+
 app = OrgBlogApp()
-app.run()
+
+if options.static:
+    app.generate()
+else:
+    app.run()
+
+    
