@@ -7,6 +7,22 @@ from .Config import *
 from .Collection import CollectionManager
 
 class OrgBlogApp:
+
+    #CollectionManager convenience methods
+    def get_slugs(self):
+        return self.__collection_manager.get_slugs()
+
+    def get_all_collections(self, *, format):
+        return self.__collection_manager.get_all_collections(format=format)
+
+    def get_all_collection_items(self, collection_slug, *, format):
+        return self.__collection_manager.get_all_collection_items(collection_slug, format=format)
+
+    def get_collection_item(self, collection_slug, item_slug, *, format):
+        return self.__collection_manager.get_collection_item(collection_slug, item_slug, format=format)
+
+    def get_all_collection_items_with_tag(self, collection_slug, tag_slug, *, format):
+        return self.self.__collection_manager.get_all_collection_items_with_tag(collection_slug, tag_slug, format=format)
     
     def __init__(self):
         config = Config.read()
@@ -23,14 +39,14 @@ class OrgBlogApp:
             if not os.path.exists(index_template) or not os.path.isfile(index_template):
                 abort(404)
             else:
-                return self.__collection_manager.get_all_collections(format="html")
+                return self.get_all_collections(format="html")
 
         @self.__flask.route("/<string:collection_slug>/", methods=["GET"])
         @self.__flask.route("/<string:collection_slug>", methods=["GET"])
 #        @self.__route("/<string:collection_slug>", methods=["GET"])
         def route_get_items(collection_slug):
             try:
-                html = self.__collection_manager.get_all_collection_items(collection_slug, format="html")
+                html = self.get_all_collection_items(collection_slug, format="html")
                 return html
             except LookupError:
                 abort(404)
@@ -39,7 +55,7 @@ class OrgBlogApp:
         @self.__flask.route("/<string:collection_slug>/<string:item_slug>", methods=["GET"])
         def route_get_item(collection_slug, item_slug):
             try:
-                html = self.__collection_manager.get_collection_item(collection_slug, item_slug, format="html")
+                html = self.get_collection_item(collection_slug, item_slug, format="html")
                 return html
             except LookupError:
                 abort(404)
@@ -47,7 +63,7 @@ class OrgBlogApp:
         @self.__flask.route("/<string:collection_slug>/tag/<string:tag_slug>", methods=["GET"])
         def route_get_items_with_tag(collection_slug, tag_slug):
             try:
-                html = self.__collection_manager.get_all_collection_items_with_tag(collection_slug, tag_slug, format="html")
+                html = self.get_all_collection_items_with_tag(collection_slug, tag_slug, format="html")
                 return html
             except LookupError:
                 abort(404)
