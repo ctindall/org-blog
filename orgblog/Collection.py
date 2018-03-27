@@ -93,6 +93,7 @@ class Collection:
         self.__template_directory = config['template_directory']
         self.__collection_slug = collection_slug
         self.__visible_todo_statuses = config["visible_todo_statuses"]
+        self.__tags = set([])
 
     def __slugify(self, slug):
         slug = re.sub(r"[^\w\s-]", '', slug)#remove weird characters
@@ -116,13 +117,10 @@ class Collection:
                 item['slug'] = self.__slugify(item['title'])
                 item['html'] = i.to_html()
                 item['tags'] = i.get_tags()
-                self.__tags.append(item['tags'])
                 item['todo_status'] = i.get_todo_status()
 
                 self.context['items'].append(item)
-
-        #uniqify the list of tags
-        self.__tags = list(set(self.__tags))
+                self.__tags.update(item['tags'])
 
     def get_tags(self):
         self.__updateContext()

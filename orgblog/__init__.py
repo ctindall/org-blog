@@ -57,12 +57,13 @@ class OrgBlogApp:
         self.__flask.run(host=self.__config['host'], port=int(self.__config['port']))
 
     def generate(self):
-        dest = os.path.expanduser(self.__config["static_directory"])
+#        dest = os.path.expanduser(self.__config["static_directory"])
+        dest = os.path.join(os.getcwd(), "_site")
         print("generating static site into '{0}'".format(dest))
         
         #index page
         if not os.path.exists(dest):
-            os.mamekdirs(dest)
+            os.makedirs(dest)
             
         with open(os.path.join(dest, "index.html"), "w") as f:
             f.write(self.get_all_collections(format="html"))
@@ -80,8 +81,8 @@ class OrgBlogApp:
             if not os.path.exists(tag_directory):
                 os.makedirs(tag_directory)
             for tag in collection.get_tags():
-                with open(os.path.join(tag_directory, tag + ".html") as f:
-                    f.write(self
+                with open(os.path.join(tag_directory, tag + ".html"), "w") as f:
+                    f.write(self.get_all_collection_items_with_tag(collection.get_slug(), tag, format="html"))
 
     #CollectionManager convenience methods
     def get_slugs(self):
@@ -97,4 +98,4 @@ class OrgBlogApp:
         return self.__collection_manager.get_collection_item(collection_slug, item_slug, format=format)
 
     def get_all_collection_items_with_tag(self, collection_slug, tag_slug, *, format):
-        return self.self.__collection_manager.get_all_collection_items_with_tag(collection_slug, tag_slug, format=format)
+        return self.__collection_manager.get_all_collection_items_with_tag(collection_slug, tag_slug, format=format)
