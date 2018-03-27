@@ -1,4 +1,4 @@
-* 2018-01-01 Hello!
+* 2018-01-01 Hello!						  :tag2:tag1:
   Welcome to =orgblog=. Have a look at the documentation and get the latest version [[https://github.com/ctindall/org-blog][on github]]
 
   #+BEGIN_SRC 

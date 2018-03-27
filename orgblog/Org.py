@@ -250,21 +250,27 @@ class OrgParser:
     def __parse_heading_line(self, level=1):
         if self.__peek():
             line_without_tags = re.sub('(\s+)?(\:.*\:)(\s+)?$', "", self.__peek())
-            match = re.search('^(\*+)(\s)([A-Z]+)?(\s+)?(.*)(\:.*\:)?', line_without_tags)
+            match = re.search('^(\*+)(\s)([A-Z][A-Z][A-Z]+)?(\s+)?(.*)(\:.*\:)?', line_without_tags)
             if not match:
                 raise OrgParseError("trouble parsing heading at line " + str(self.__stream.get_line_number()))
 
             todo_status = match.group(3)
             parsed_level = len(match.group(1))
+            space_between_todo_and_title = match.group(4)
             title = match.group(5)
 
-            if todo_status not in self.get_valid_todo_statuses():
+            if todo_status not in self.get_valid_todo_statuses() or not todo_status:
                 # If the parsed TODO status is not actually a valid
                 # status, then we were mistaken and the todo_status is
                 # really part of the title. Add it back, along with
                 # the white space that we thought separated them.
-                title = todo_status + match.group(4) + title
                 todo_status = ""
+                
+                if not title:
+                    title = ""
+
+                if not space_between_todo_and_title:
+                    space_between_todo_and_title = ""
 
             if match and parsed_level == level:
                 return title, level, todo_status
