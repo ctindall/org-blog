@@ -84,6 +84,11 @@ class OrgBlogApp:
                 with open(os.path.join(tag_directory, tag + ".html"), "w") as f:
                     f.write(self.get_all_collection_items_with_tag(collection.get_slug(), tag, format="html"))
 
+            #collection item pages
+            for item in collection.get_items():
+                with open(os.path.join(collection_directory, item['slug'] + ".html"), "w") as f:
+                    f.write(self.get_collection_item(collection.get_slug(), item['slug'], format="html"))
+
     #CollectionManager convenience methods
     def get_slugs(self):
         return self.__collection_manager.get_slugs()
