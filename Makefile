@@ -2,7 +2,7 @@ release:
 	echo cutting release for v$(v)
 	sed -i "s/version\='.*'/version='$(v)'/" setup.py 
 	git add .
-	git commit -m"cutting release"
+	git commit -m"cutting release v$(v)"
 	git tag v$(v) HEAD
 	python3 setup.py sdist upload -r pypi
 	git push origin master
