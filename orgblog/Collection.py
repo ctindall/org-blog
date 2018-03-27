@@ -116,9 +116,17 @@ class Collection:
                 item['slug'] = self.__slugify(item['title'])
                 item['html'] = i.to_html()
                 item['tags'] = i.get_tags()
+                self.__tags.append(item['tags'])
                 item['todo_status'] = i.get_todo_status()
 
                 self.context['items'].append(item)
+
+        #uniqify the list of tags
+        self.__tags = list(set(self.__tags))
+
+    def get_tags(self):
+        self.__updateContext()
+        return self.__tags
                 
     def get_items(self, format=None):
         self.__updateContext()
