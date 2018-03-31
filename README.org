@@ -1,4 +1,3 @@
-
 * Demo
   I use =orgblog= on my blog at [[https://billipede.net/][https://billipede.net]] but I'm sure you'll come up with a nicer template than mine.
 * Quickstart 
@@ -18,7 +17,7 @@
   There's no shortage of advice online about how to set up a simple (or not-so-simple) blog using org-mode in Emacs. Most of this advice assumes a lot of things that aren't true about me:
 
   - I am not that comfortable with writing/editing large globs of mostly impenetrable elisp source.
-  - I don't want a static site generator, since that adds a build step, and I'd rather be able to just make my edits and go.
+  - I don't want a static site generator, since that adds a build step, and I'd rather be able to just make my edits and go (note that, despite this, orgblog does now support static site generation)
   - I don't want to deal with the really-quite-confusing and dense HTML that org-mode's default exporter comes coughs up.
   - I don't want to export from org-mode to some other intermediate format (like Jekyll) on my way from org-mode to serveable HTML.
 
@@ -67,3 +66,12 @@
   In the context of a blog, =items.html= would be used for the =/posts= url, while =items.html= would be used for a url like =/posts/2018-06-01-its-my-birthday-again=.
 
   =tag.html= is used for constructing a page which will show items in a collection with a particular tag. In the blog use-case, this would be a page like =/posts/tag/hotdogs= containing a list of posts with the =hotdog= tag. The context it receives is similar to the one =items.html= receoves except the ={{#items}}= list only contains the appropriately-tagged items, and there is an additional string variable ={{tag}}== to tell the template what tag the page is for.
+
+* Static Generation
+  As of version 0.7.5, orgblog supports a =--static= flag which will output a set of static HTML files to a directory named =_site= in your current working directory. Note that all files will be given a =.html= suffix. If you want to serve these via Apache, but want to retain "pretty" urls without the =.html= suffix, use a =.htaccess= file (or edit the VirtualHost configuration) like this:
+
+#+BEGIN_SRC
+  RewriteEngine On
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^([^\.]+)$ $1.html [NC,L]
+#+END_SRC
