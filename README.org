@@ -37,6 +37,10 @@
     Default: =5000=
     What port the server will listen on for web requests.
 
+*** static_directory
+    Default: =~/.orgblog/static/=
+    This is a directory where you can put additional static assets like images, javascript, or CSS files that your site needs. They will be served under =/static/=.
+
 *** collections_directory
     Default: =~/.orgblog/collections/=
     This is the full path to the directory containing org files which represent collections.
