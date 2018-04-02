@@ -4,22 +4,22 @@ import os
 import re
 
 #our stuff
-from .Config import *
+from .Config import Config
 from .Collection import CollectionManager
 
 class OrgBlogApp:
     
-    def __init__(self, config=Config.read()):
+    def __init__(self, config=Config()):
         self.__config = config
         self.__flask = Flask(__name__,
-                           static_folder=Config.lookup("static_directory"),
+                           static_folder=self.__config.lookup("static_directory"),
                            static_url_path="/static")
 
-        self.__collection_manager = CollectionManager(config)
+        self.__collection_manager = CollectionManager(self.__config)
         
         @self.__flask.route("/", methods=["GET"])
         def route_root():
-            index_template = os.path.join(Config.lookup("template_directory"), "index.html")
+            index_template = os.path.join(self.__config.lookup("template_directory"), "index.html")
             
             if not os.path.exists(index_template) or not os.path.isfile(index_template):
                 abort(404)
@@ -53,11 +53,9 @@ class OrgBlogApp:
                 abort(404)        
                 
     def run(self):
-        config = Config.read()
-        self.__flask.run(host=self.__config['host'], port=int(self.__config['port']))
+        self.__flask.run(host=self.__config.lookup('host'), port=int(self.__config.lookup('port')))
 
     def generate(self):
-#        dest = os.path.expanduser(self.__config["static_directory"])
         dest = os.path.join(os.getcwd(), "_site")
         print("generating static site into '{0}'".format(dest))
         

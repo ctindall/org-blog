@@ -29,21 +29,29 @@ optparser.add_option("--static",
                      dest="static",
                      action="store_true",
                      help="Generate site statically instead of serving it.")
+optparser.add_option("--config",
+                     dest="config_file",
+                     help="Specify a config file in a non-standard location")
 
 (options, args) = optparser.parse_args()    
 
+if options.config_file:
+    config = Config(options.config_file)
+else:
+    config = Config()
+
 if options.install_default_conf:
-    Config.install_default()
+    config.install_default()
 
 if options.install_default_templates:
     #actual template files
     source = os.path.join(os.path.dirname(__file__), "templates")
-    destination = Config.lookup("template_directory")
+    destination = config.lookup("template_directory")
     copy_defaults(source, destination)
 
     #static files
     source = os.path.join(os.path.dirname(__file__), "static")
-    destination = Config.lookup("static_directory")
+    destination = config.lookup("static_directory")
     copy_defaults(source, destination)
 
     
@@ -52,7 +60,8 @@ if options.install_test_posts:
     destination = Config.lookup("collections_directory")
     copy_defaults(source, destination)
 
-app = OrgBlogApp()
+    
+app = OrgBlogApp(config=config)
 
 if options.static:
     app.generate()

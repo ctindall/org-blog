@@ -1,4 +1,5 @@
 from .Org import OrgParser
+from .Config import Config
 
 import pystache
 import re
@@ -6,9 +7,9 @@ import os
 
 class CollectionManager():
 
-    def __init__(self, config):
-        self.__collections_directory = config['collections_directory']
-        self.__template_directory = config['template_directory']
+    def __init__(self, config=Config()):
+        self.__collections_directory = config.lookup('collections_directory')
+        self.__template_directory = config.lookup('template_directory')
         
         self.__collections = [];
         
@@ -88,11 +89,11 @@ class CollectionManager():
         
 class Collection:
     
-    def __init__(self, collection_slug, config):
-        self.__orgfile_path = os.path.join(config['collections_directory'], collection_slug + ".org")
-        self.__template_directory = config['template_directory']
+    def __init__(self, collection_slug, config=Config()):
+        self.__orgfile_path = os.path.join(config.lookup('collections_directory'), collection_slug + ".org")
+        self.__template_directory = config.lookup('template_directory')
         self.__collection_slug = collection_slug
-        self.__visible_todo_statuses = config["visible_todo_statuses"]
+        self.__visible_todo_statuses = config.lookup("visible_todo_statuses")
         self.__tags = set([])
 
     def __slugify(self, slug):
