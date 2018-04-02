@@ -36,7 +36,7 @@ optparser.add_option("--config",
 (options, args) = optparser.parse_args()    
 
 if options.config_file:
-    config = Config(options.config_file)
+    config = Config(filename=options.config_file)
 else:
     config = Config()
 

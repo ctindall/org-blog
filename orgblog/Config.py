@@ -17,7 +17,7 @@ class Config:
         self.__config = {}
 
         if 'filename' in kwargs.keys() and os.path.isfile(kwargs['filename']):
-            self.__config = json.loads(open(filename).read())
+            self.__config = json.loads(open(kwargs['filename']).read())
         elif os.path.isfile(os.path.expanduser("~/.orgblog.json")):
             self.__config = json.loads(open(os.path.expanduser("~/.orgblog.json")).read())
         elif os.path.isfile("/etc/orgblog.json"):
